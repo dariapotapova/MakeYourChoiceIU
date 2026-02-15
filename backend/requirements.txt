@@ -1,0 +1,5 @@
+Django==4.2  # django
+psycopg2-binary==2.9.9 # for communication with postgres
+python-dotenv==1.0.0 # for reading .env
+djangorestframework==3.14.0 # for API
+django-cors-headers==4.3.1 # for communication with frontend via React

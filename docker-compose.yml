@@ -1,11 +1,11 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
     container_name: MakeYourChoice_backend
+    volumes:
+      - ./backend:/app
     env_file: 
       - .env
     ports:
@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: MakeYourChoice_frontend
     ports:
-      - "3000:3000"
+      - "3000:5173"
     depends_on:
       - backend
     networks:
