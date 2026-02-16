@@ -1,12 +1,21 @@
 .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+
     height: 56px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
     background: transparent;
     padding: 0 var(--spacing-xl);
+
     z-index: 2000;
 }
+
+
 
 .left {
     display: flex;
