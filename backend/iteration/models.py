@@ -1,3 +1,17 @@
 from django.db import models
+from catalog import models as catalog_models
 
-# Create your models here.
+class Stream(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    degree_year = models.ForeignKey(catalog_models.Degree, on_delete=models.CASCADE)
+    program_lang = models.ForeignKey(catalog_models.ProgramLanguages, on_delete=models.RESTRICT)
+    elective_type = models.ForeignKey(catalog_models.ElectiveTypes, on_delete=models.CASCADE)
+    programs = models.ManyToManyField(catalog_models.Programs)
+    priorities = models.IntegerField(default=5)
+
+class Iteration(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    year = models.IntegerField()
+    season = models.CharField(max_length=6)
+    streams = models.ManyToManyField(Stream)
+    deadline = models.DateTimeField()

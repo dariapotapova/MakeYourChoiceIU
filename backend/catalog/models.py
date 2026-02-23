@@ -1,26 +1,31 @@
 from django.db import models
 
-class elective_types(models.Model):
-    id = models.IntegerField(unique=True, primary_key=True) # set additional row id=0 as default in the table
-    name = models.TextField(unique=True)
+class ProgramLanguages(models.Model):
+    language = models.CharField(unique=True, primary_key=True, max_length=3)
 
-class electives(models.Model):
-    id = models.IntegerField(unique=True, primary_key=True)
-    name = models.TextField()
-    instructor = models.TextField(max_length=100)
+class Degree(models.Model):
+    degree_year = models.CharField(unique=True, primary_key=True, max_length=10)
+
+class ElectiveTypes(models.Model):
+    elective_type_name = models.CharField(max_length=20, unique=True, primary_key=True)
+
+class Electives(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    instructor = models.CharField(max_length=100)
     description = models.TextField()
-    elective_type = models.ForeignKey(elective_types, on_delete=models.SET_DEFAULT, default=0)
-    language = models.TextField(max_length=3)
-    status = models.IntegerField(default=0)
-    degree_year = models.TextField(max_length=5)
+    elective_type = models.ForeignKey(ElectiveTypes, null=True, on_delete=models.RESTRICT)
+    language = models.ForeignKey(ProgramLanguages, on_delete=models.CASCADE)
+    status = models.IntegerField(default=0) # 0 - , 1 - todo!! чтобы точно все знали расшифровку статусов
+    degree_year = models.ManyToManyField(Degree, null=True)
     prerequisite = models.TextField()
 
-class programs(models.Model):
-    id = models.IntegerField(unique=True, primary_key=True)
-    name = models.TextField()
-    language = models.TextField(max_length=3)
+class Programs(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=200)
+    language = models.ForeignKey(ProgramLanguages, on_delete=models.CASCADE)
 
-class tracks(models.Model):
-    id = models.IntegerField(unique=True, primary_key=True)
-    name = models.TextField()
-    program_id = models.ForeignKey(programs, on_delete=models.CASCADE) # if a program is deleted, track is deleted, too
+class Tracks(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    name = models.CharField(max_length=10)
+    program = models.ForeignKey(Programs, on_delete=models.CASCADE) # if a program is deleted, track is deleted, too
