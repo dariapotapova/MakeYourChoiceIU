@@ -9,6 +9,15 @@
     z-index: 1000;
     overflow-y: auto;
     border-left: 3px solid var(--color-primary);
+
+    /* скрыть скроллбар, но оставить скролл */
+    -ms-overflow-style: none; /* IE/old Edge */
+    scrollbar-width: none;    /* Firefox */
+}
+
+.wrapper::-webkit-scrollbar {
+    width: 0;
+    height: 0;
 }
 
 .container {
