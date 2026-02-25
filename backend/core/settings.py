@@ -36,6 +36,8 @@ INSTALLED_APPS = [
     'voting',
     'catalog',
     'iteration',
+    'rest_framework',
+    'django_filters',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -55,6 +57,12 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'core.urls'
+
+REST_FRAMEWORK = {
+'DEFAULT_FILTER_BACKENDS': [
+'django_filters.rest_framework.DjangoFilterBackend'
+]
+}
 
 TEMPLATES = [
     {

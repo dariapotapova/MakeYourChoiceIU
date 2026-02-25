@@ -16,8 +16,8 @@ class Electives(models.Model):
     description = models.TextField()
     elective_type = models.ForeignKey(ElectiveTypes, null=True, on_delete=models.RESTRICT)
     language = models.ForeignKey(ProgramLanguages, on_delete=models.CASCADE)
-    status = models.IntegerField(default=0) # 0 - , 1 - todo!! чтобы точно все знали расшифровку статусов
-    degree_year = models.ManyToManyField(Degree, null=True)
+    status = models.IntegerField(default=0) # 0 - archived, 1 - active
+    degree_year = models.ManyToManyField(Degree, blank=True)
     prerequisite = models.TextField()
 
 class Programs(models.Model):
