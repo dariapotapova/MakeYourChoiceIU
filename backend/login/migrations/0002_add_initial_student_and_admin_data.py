@@ -26,17 +26,17 @@ def add_initial_student(apps, schema_editor):
     mfai = Program.objects.get(name='MFAI')
 
     Track = apps.get_model('catalog', 'Track')
-    ds = Program.objects.get(name='DS')
-    ai = Program.objects.get(name='AI')
-    ro = Program.objects.get(name='RO')
-    sd = Program.objects.get(name='SD')
-    gd = Program.objects.get(name='GD')
+    ds = Track.objects.get(name='DS')
+    ai = Track.objects.get(name='AI')
+    ro = Track.objects.get(name='RO')
+    sd = Track.objects.get(name='SD')
+    gd = Track.objects.get(name='GD')
 
     Degree = apps.get_model('catalog', 'Degree')
-    bs1 = Program.objects.get(degree_year='BS1')
-    bs2 = Program.objects.get(degree_year='BS2')
-    ms1 = Program.objects.get(degree_year='MS1')
-    ms2 = Program.objects.get(degree_year='MS2')
+    bs1 = Degree.objects.get(degree_year='BS1')
+    bs2 = Degree.objects.get(degree_year='BS2')
+    ms1 = Degree.objects.get(degree_year='MS1')
+    ms2 = Degree.objects.get(degree_year='MS2')
 
     students = [
         Student(

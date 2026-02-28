@@ -12,4 +12,3 @@ class Student(models.Model):
     degree_year = models.ForeignKey(catalog_models.Degree, on_delete=models.CASCADE)
     program = models.ForeignKey(catalog_models.Program, on_delete=models.CASCADE)
     track = models.ForeignKey(catalog_models.Track, null=True, on_delete=models.RESTRICT)
-# Create your models here.
