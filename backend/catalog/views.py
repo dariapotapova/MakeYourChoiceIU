@@ -8,7 +8,6 @@ from rest_framework.filters import SearchFilter
 from .models import Elective, Program
 from .serializers import ElectiveSerializer, ProgramSerializer
 
-# Create your views here.
 class ProgramViewSet(viewsets.ModelViewSet):
     queryset = Program.objects.all()
     serializer_class = ProgramSerializer
@@ -42,6 +41,44 @@ class ElectiveViewSet(viewsets.ModelViewSet):
         'description',
         'instructor'
     ]
+
+    def create(self, request, *args, **kwargs):
+
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success"}, status=201)
+
+        return Response({
+            "status": "error",
+            "errors": serializer.errors
+        }, status=400)
+    
+    def partial_update(self, request, *args, **kwargs):
+
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success"})
+
+        return Response({
+            "status": "error",
+            "errors": serializer.errors
+        }, status=400)
+    
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
+            instance.delete()
+            return Response({"status": "success"})
+        except Elective.DoesNotExist:
+            return Response({
+            "status": "error"
+        }, status=404)
+
 
     @action(detail=True, methods=['post'])
     def archive(self, request, pk=None):
