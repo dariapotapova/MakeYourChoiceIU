@@ -1,28 +1,17 @@
-import { useMemo, useState } from 'react';
-import { StudentElectiveCard } from './components/StudentElectiveCard';
-import { AdminElectiveCard } from './components/AdminElectiveCard';
+import { useState } from 'react';
 import { useElectives } from './hooks/useElectives';
+import { StudentElectivesPage } from './pages/StudentElectivesPage';
+import { AdminElectivesPage } from './pages/AdminElectivesPage';
+import { archiveElective, deleteElective, updateElective } from './api/electives';
 import type { Elective } from './types/elective';
 
 function App() {
     const { electives, loading, error, refetch } = useElectives();
 
-    /**
-     * Локальный query для теста поиска и подсветки.
-     * Пока просто вручную вводим строку в input.
-     */
-    const [query, setQuery] = useState('');
-
-    /**
-     * Локальное "избранное" для student-теста.
-     * Храним id курсов в массиве.
-     *
-     * Потом это можно заменить на:
-     * - API
-     * - global state
-     * - отдельный хук
-     */
+    const [mode, setMode] = useState<'student' | 'admin'>('student');
     const [favouriteIds, setFavouriteIds] = useState<number[]>([]);
+    const [actionError, setActionError] = useState<string | null>(null);
+    const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
     function handleToggleFavourite(elective: Elective) {
         setFavouriteIds((prev) => {
@@ -36,22 +25,74 @@ function App() {
         });
     }
 
-    /**
-     * Для удобства быстрый lookup:
-     * находится ли конкретный курс в избранном.
-     */
-    const favouriteSet = useMemo(() => new Set(favouriteIds), [favouriteIds]);
+    async function handleArchive(elective: Elective) {
+        try {
+            setActionError(null);
+            setActionLoadingId(elective.id);
 
-    function handleEdit(elective: Elective) {
-        console.log('edit elective', elective);
+            await archiveElective(elective.id);
+            await refetch();
+        } catch (err) {
+            setActionError(err instanceof Error ? err.message : 'Failed to archive elective');
+        } finally {
+            setActionLoadingId(null);
+        }
     }
 
-    function handleArchive(elective: Elective) {
-        console.log('archive elective', elective);
+    async function handleDelete(elective: Elective) {
+        const confirmed = window.confirm(
+            `Delete elective "${elective.name}"? This action cannot be undone.`
+        );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            setActionError(null);
+            setActionLoadingId(elective.id);
+
+            await deleteElective(elective.id);
+            await refetch();
+        } catch (err) {
+            setActionError(err instanceof Error ? err.message : 'Failed to delete elective');
+        } finally {
+            setActionLoadingId(null);
+        }
     }
 
-    function handleDelete(elective: Elective) {
-        console.log('delete elective', elective);
+    async function handleEdit(elective: Elective) {
+        const nextName = window.prompt('Edit elective name', elective.name);
+        if (nextName === null) {
+            return;
+        }
+
+        const nextInstructor = window.prompt('Edit instructor', elective.instructor);
+        if (nextInstructor === null) {
+            return;
+        }
+
+        const nextDescription = window.prompt('Edit description', elective.description);
+        if (nextDescription === null) {
+            return;
+        }
+
+        try {
+            setActionError(null);
+            setActionLoadingId(elective.id);
+
+            await updateElective(elective.id, {
+                name: nextName,
+                instructor: nextInstructor,
+                description: nextDescription,
+            });
+
+            await refetch();
+        } catch (err) {
+            setActionError(err instanceof Error ? err.message : 'Failed to update elective');
+        } finally {
+            setActionLoadingId(null);
+        }
     }
 
     if (loading) {
@@ -60,63 +101,55 @@ function App() {
 
     if (error) {
         return (
-            <div>
+            <main>
+                <h1>Electives test</h1>
                 <p>Failed to load electives: {error}</p>
                 <button type="button" onClick={refetch}>
                     Retry
                 </button>
-            </div>
+            </main>
         );
     }
-    console.log(electives[0]);
-    return (
-        <main style={{ maxWidth: 980, margin: '0 auto', padding: '24px' }}>
-            <h1>Electives test page</h1>
 
-            <div style={{ marginBottom: 20 }}>
-                <label htmlFor="query-input">Search query: </label>
-                <input
-                    id="query-input"
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    placeholder="Type to test highlight"
-                />
+    return (
+        <main>
+            <div>
+                <button
+                    type="button"
+                    onClick={() => setMode('student')}
+                    aria-pressed={mode === 'student'}
+                >
+                    Student mode
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => setMode('admin')}
+                    aria-pressed={mode === 'admin'}
+                >
+                    Admin mode
+                </button>
             </div>
 
-            <hr />
+            {actionError ? <p>Action failed: {actionError}</p> : null}
+            {actionLoadingId !== null ? <p>Processing elective id: {actionLoadingId}</p> : null}
 
-            <section style={{ display: 'grid', gap: 16, marginTop: 24 }}>
-                <h2>Student cards</h2>
-
-                {electives.map((elective) => (
-                    <StudentElectiveCard
-                        key={`student-${elective.id}`}
-                        elective={elective}
-                        locale="en"
-                        query={query}
-                        isFavourite={favouriteSet.has(elective.id)}
-                        onToggleFavourite={handleToggleFavourite}
-                    />
-                ))}
-            </section>
-
-            <hr style={{ margin: '32px 0' }} />
-
-            <section style={{ display: 'grid', gap: 16 }}>
-                <h2>Admin cards</h2>
-
-                {electives.map((elective) => (
-                    <AdminElectiveCard
-                        key={`admin-${elective.id}`}
-                        elective={elective}
-                        locale="en"
-                        query={query}
-                        onEdit={handleEdit}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                    />
-                ))}
-            </section>
+            {mode === 'student' ? (
+                <StudentElectivesPage
+                    electives={electives}
+                    locale="en"
+                    favouriteIds={favouriteIds}
+                    onToggleFavourite={handleToggleFavourite}
+                />
+            ) : (
+                <AdminElectivesPage
+                    electives={electives}
+                    locale="en"
+                    onEdit={handleEdit}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                />
+            )}
         </main>
     );
 }

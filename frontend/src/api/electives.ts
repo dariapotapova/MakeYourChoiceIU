@@ -60,7 +60,7 @@ export interface UpdateElectivePayload {
     prerequisite?: string;
     elective_type?: string;
     program_language?: string;
-    degreeYear?: string[];
+    degree_year?: string[];
 }
 
 /**
@@ -79,6 +79,7 @@ export async function updateElective(
         },
         body: JSON.stringify(payload),
     });
+    console.log(JSON.stringify(payload));
 
     return handleResponse<Elective>(response);
 }
