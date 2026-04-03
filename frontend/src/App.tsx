@@ -1,97 +1,124 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { useMemo, useState } from 'react';
+import { StudentElectiveCard } from './components/StudentElectiveCard';
+import { AdminElectiveCard } from './components/AdminElectiveCard';
+import { useElectives } from './hooks/useElectives';
+import type { Elective } from './types/elective';
 
-import LoginPage from './pages/LoginPage/LoginPage.tsx';
-import { AdminElectivesPage } from './pages/AdminElectivesPage/AdminElectivesPage.tsx';
+function App() {
+    const { electives, loading, error, refetch } = useElectives();
 
-import ProtectedRoute from './routes/ProtectedRoute';
-import { LogoutRoute } from './routes/LogoutRoute';
+    /**
+     * Локальный query для теста поиска и подсветки.
+     * Пока просто вручную вводим строку в input.
+     */
+    const [query, setQuery] = useState('');
 
-import type { User } from './types/user';
-import { AuthProvider, useAuth } from './app/AuthContext.tsx';
-import { LocaleProvider } from './app/locale/LocaleContext';
+    /**
+     * Локальное "избранное" для student-теста.
+     * Храним id курсов в массиве.
+     *
+     * Потом это можно заменить на:
+     * - API
+     * - global state
+     * - отдельный хук
+     */
+    const [favouriteIds, setFavouriteIds] = useState<number[]>([]);
 
-import { StudentLayout } from './pages/StudentLayout/StudentLayout';
-import { StudentElectivesByTypePage } from './pages/StudentElectivesByTypePage/StudentElectivesByTypePage';
+    function handleToggleFavourite(elective: Elective) {
+        setFavouriteIds((prev) => {
+            const exists = prev.includes(elective.id);
 
+            if (exists) {
+                return prev.filter((id) => id !== elective.id);
+            }
 
-function getDefaultPath(user: User) {
-    // combined пока ведём как admin (можно сделать отдельный выбор)
-    if (user.role === 'admin' ) return '/admin';
-    return '/student';
-}
+            return [...prev, elective.id];
+        });
+    }
 
-/**
- * Вынесли провайдеры в App, чтобы state был доступен во всех страницах.
- */
-export default function App() {
+    /**
+     * Для удобства быстрый lookup:
+     * находится ли конкретный курс в избранном.
+     */
+    const favouriteSet = useMemo(() => new Set(favouriteIds), [favouriteIds]);
+
+    function handleEdit(elective: Elective) {
+        console.log('edit elective', elective);
+    }
+
+    function handleArchive(elective: Elective) {
+        console.log('archive elective', elective);
+    }
+
+    function handleDelete(elective: Elective) {
+        console.log('delete elective', elective);
+    }
+
+    if (loading) {
+        return <div>Loading electives...</div>;
+    }
+
+    if (error) {
+        return (
+            <div>
+                <p>Failed to load electives: {error}</p>
+                <button type="button" onClick={refetch}>
+                    Retry
+                </button>
+            </div>
+        );
+    }
+    console.log(electives[0]);
     return (
-        <AuthProvider>
-            <LocaleProvider>
-                <AppRoutes />
-            </LocaleProvider>
-        </AuthProvider>
+        <main style={{ maxWidth: 980, margin: '0 auto', padding: '24px' }}>
+            <h1>Electives test page</h1>
+
+            <div style={{ marginBottom: 20 }}>
+                <label htmlFor="query-input">Search query: </label>
+                <input
+                    id="query-input"
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                    placeholder="Type to test highlight"
+                />
+            </div>
+
+            <hr />
+
+            <section style={{ display: 'grid', gap: 16, marginTop: 24 }}>
+                <h2>Student cards</h2>
+
+                {electives.map((elective) => (
+                    <StudentElectiveCard
+                        key={`student-${elective.id}`}
+                        elective={elective}
+                        locale="en"
+                        query={query}
+                        isFavourite={favouriteSet.has(elective.id)}
+                        onToggleFavourite={handleToggleFavourite}
+                    />
+                ))}
+            </section>
+
+            <hr style={{ margin: '32px 0' }} />
+
+            <section style={{ display: 'grid', gap: 16 }}>
+                <h2>Admin cards</h2>
+
+                {electives.map((elective) => (
+                    <AdminElectiveCard
+                        key={`admin-${elective.id}`}
+                        elective={elective}
+                        locale="en"
+                        query={query}
+                        onEdit={handleEdit}
+                        onArchive={handleArchive}
+                        onDelete={handleDelete}
+                    />
+                ))}
+            </section>
+        </main>
     );
 }
 
-function AppRoutes() {
-    const { user, setUser } = useAuth();
-
-    return (
-        <Routes>
-            <Route
-                path="/login"
-                element={
-                    user ? (
-                        <Navigate to={getDefaultPath(user)} replace />
-                    ) : (
-                        <LoginPage onLoginSuccess={setUser} />
-                    )
-                }
-            />
-
-            <Route
-                path="/student"
-                element={
-                    <ProtectedRoute user={user}>
-                        <StudentLayout />
-                    </ProtectedRoute>
-                }
-            >
-                {/* куда попадать при /student */}
-                <Route index element={<Navigate to="electives/tech" replace />} />
-                {/* если хочешь главную: <Route index element={<Navigate to="main" replace />} /> */}
-                {/* <Route path="main" element={<StudentMainPage />} /> */}
-
-                {/* динамическая страница по типу */}
-                <Route path="electives/:type" element={<StudentElectivesByTypePage />} />
-            </Route>
-
-            <Route
-                path="/admin"
-                element={
-                    <ProtectedRoute user={user}>
-                        <AdminElectivesPage />
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="/logout"
-                element={
-                    <ProtectedRoute user={user}>
-                        <LogoutRoute />
-                    </ProtectedRoute>
-                }
-            />
-
-            <Route
-                path="/"
-                element={
-                    user ? <Navigate to={getDefaultPath(user)} replace /> : <Navigate to="/login" replace />
-                }
-            />
-
-            <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-    );
-}
+export default App;
