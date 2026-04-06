@@ -4,7 +4,26 @@ import { StudentElectivesPage } from './pages/StudentElectivesPage';
 import { AdminElectivesPage } from './pages/AdminElectivesPage';
 import { archiveElective, deleteElective, updateElective } from './api/electives';
 import type { Elective } from './types/elective';
+import type { StudentProfileElectiveType } from './types/studentSidebar';
+import buttonStyles from './styles/button.module.css';
 
+const MOCK_STUDENT_ELECTIVE_TYPES: StudentProfileElectiveType[] = [
+    {
+        type: 'TECH',
+        label: 'Tech',
+        requiredCount: 2,
+    },
+    {
+        type: 'HUM',
+        label: 'Hum',
+        requiredCount: 1,
+    },
+];
+
+/**
+ * Если у тебя сейчас в данных другие типы, например MATH вместо HUM,
+ * просто поменяй мок выше.
+ */
 function App() {
     const { electives, loading, error, refetch } = useElectives();
 
@@ -118,6 +137,11 @@ function App() {
                     type="button"
                     onClick={() => setMode('student')}
                     aria-pressed={mode === 'student'}
+                    className={[
+                        buttonStyles.button,
+                        buttonStyles.sizeMd,
+                        mode === 'student' ? buttonStyles.variantPrimary : buttonStyles.variantGhost,
+                    ].join(' ')}
                 >
                     Student mode
                 </button>
@@ -126,6 +150,11 @@ function App() {
                     type="button"
                     onClick={() => setMode('admin')}
                     aria-pressed={mode === 'admin'}
+                    className={[
+                        buttonStyles.button,
+                        buttonStyles.sizeMd,
+                        mode === 'admin' ? buttonStyles.variantPrimary : buttonStyles.variantGhost,
+                    ].join(' ')}
                 >
                     Admin mode
                 </button>
@@ -139,6 +168,7 @@ function App() {
                     electives={electives}
                     locale="en"
                     favouriteIds={favouriteIds}
+                    availableElectiveTypes={MOCK_STUDENT_ELECTIVE_TYPES}
                     onToggleFavourite={handleToggleFavourite}
                 />
             ) : (

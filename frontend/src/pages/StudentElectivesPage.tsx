@@ -1,33 +1,49 @@
 import { useEffect, useState } from 'react';
 import type { Elective } from '../types/elective';
 import type { Locale } from '../utils/electiveText';
+import type { StudentProfileElectiveType } from '../types/studentSidebar';
 import { useStudentElectivesPage } from '../hooks/useStudentElectivesPage';
+import { useStudentSidebar } from '../hooks/useStudentSidebar';
 import { SearchInput } from '../components/SearchInput';
-import { StudentElectiveTypeTabs } from '../components/StudentElectiveTypeTabs';
+import { StudentSidebar } from '../components/StudentSidebar';
+import { StudentPageLayout } from '../components/StudentPageLayout';
 import { ElectivesList } from '../components/ElectivesList';
+import { StudentElectiveSelectionForm } from '../components/StudentElectiveSelectionForm';
 
 interface StudentElectivesPageProps {
     electives: Elective[];
     locale: Locale;
     favouriteIds: number[];
+    availableElectiveTypes: StudentProfileElectiveType[];
     onToggleFavourite?: (elective: Elective) => void;
 }
 
-/**
- * Student page:
- * - хранит query
- * - хранит activeType
- * - использует page-level hook
- * - собирает экран из маленьких компонентов
- */
 export function StudentElectivesPage({
                                          electives,
                                          locale,
                                          favouriteIds,
+                                         availableElectiveTypes,
                                          onToggleFavourite,
                                      }: StudentElectivesPageProps) {
     const [query, setQuery] = useState('');
-    const [activeType, setActiveType] = useState('all');
+
+    const {
+        sections,
+        activeSectionKey,
+        activeSection,
+        setActiveSectionKey,
+    } = useStudentSidebar({
+        electiveTypes: availableElectiveTypes,
+    });
+
+    /**
+     * Для student list activeType берём из sidebar.
+     * Если выбрана main, то type-filter не применяем.
+     */
+    const activeType =
+        activeSection?.kind === 'elective-type' && activeSection.electiveType
+            ? activeSection.electiveType
+            : 'all';
 
     const { tabs, visibleElectives } = useStudentElectivesPage({
         electives,
@@ -36,41 +52,80 @@ export function StudentElectivesPage({
         activeType,
     });
 
+    /**
+     * Если sidebar переключился на тип, которого больше нет среди доступных tabs,
+     * откатимся на main.
+     *
+     * Это защита на случай обновления данных.
+     */
     useEffect(() => {
-        const hasActiveTab = tabs.some((tab) => tab.value === activeType);
-
-        if (!hasActiveTab) {
-            setActiveType('all');
+        if (activeSection?.kind !== 'elective-type') {
+            return;
         }
-    }, [tabs, activeType]);
+
+        const exists = tabs.some((tab) => tab.value === activeSection.electiveType);
+
+        if (!exists) {
+            setActiveSectionKey('main');
+        }
+    }, [tabs, activeSection, setActiveSectionKey]);
+
+    function renderContent() {
+        if (!activeSection) {
+            return <p>No active section</p>;
+        }
+
+        if (activeSection.kind === 'main') {
+            return (
+                <section>
+                    <h1>Student electives</h1>
+
+                    <p>Main page placeholder.</p>
+                    <p>Here we will later show the latest submitted elective choices.</p>
+                </section>
+            );
+        }
+
+        return (
+            <section>
+                <h1>{activeSection.label}</h1>
+
+                <SearchInput
+                    id="student-electives-search"
+                    label="Search electives: "
+                    value={query}
+                    onChange={setQuery}
+                    placeholder="Type to search"
+                />
+
+                <StudentElectiveSelectionForm
+                    electiveType={activeSection.electiveType ?? ''}
+                    requiredCount={activeSection.requiredCount ?? 0}
+                />
+
+                <ElectivesList
+                    role="student"
+                    electives={visibleElectives}
+                    locale={locale}
+                    query={query}
+                    favouriteIds={favouriteIds}
+                    onToggleFavourite={onToggleFavourite}
+                    emptyText="No electives match the current filters"
+                />
+            </section>
+        );
+    }
 
     return (
-        <main>
-            <h1>Student electives</h1>
-
-            <SearchInput
-                id="student-electives-search"
-                label="Search electives: "
-                value={query}
-                onChange={setQuery}
-                placeholder="Type to search"
-            />
-
-            <StudentElectiveTypeTabs
-                tabs={tabs}
-                activeType={activeType}
-                onChange={setActiveType}
-            />
-
-            <ElectivesList
-                role="student"
-                electives={visibleElectives}
-                locale={locale}
-                query={query}
-                favouriteIds={favouriteIds}
-                onToggleFavourite={onToggleFavourite}
-                emptyText="No electives match the current student filters"
-            />
-        </main>
+        <StudentPageLayout
+            sidebar={
+                <StudentSidebar
+                    sections={sections}
+                    activeSectionKey={activeSectionKey}
+                    onChange={setActiveSectionKey}
+                />
+            }
+            content={renderContent()}
+        />
     );
 }
