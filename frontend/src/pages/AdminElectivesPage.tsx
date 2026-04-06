@@ -3,13 +3,13 @@ import type { Elective } from '../types/elective';
 import type { AdminElectiveFilters } from '../types/electivesList';
 import type { Locale } from '../utils/electiveText';
 import { useAdminElectivesPage } from '../hooks/useAdminElectivesPage';
-import { SearchInput } from '../components/SearchInput';
 import { AdminElectiveFilters as AdminElectiveFiltersPanel } from '../components/AdminElectiveFilters';
 import { ElectivesList } from '../components/ElectivesList';
 
 interface AdminElectivesPageProps {
     electives: Elective[];
     locale: Locale;
+    query: string,
     onEdit?: (elective: Elective) => void;
     onArchive?: (elective: Elective) => void;
     onDelete?: (elective: Elective) => void;
@@ -33,11 +33,11 @@ const INITIAL_FILTERS: AdminElectiveFilters = {
 export function AdminElectivesPage({
                                        electives,
                                        locale,
+                                        query,
                                        onEdit,
                                        onArchive,
                                        onDelete,
                                    }: AdminElectivesPageProps) {
-    const [query, setQuery] = useState('');
     const [filters, setFilters] = useState<AdminElectiveFilters>(INITIAL_FILTERS);
 
     const { visibleElectives, filterOptions } = useAdminElectivesPage({
@@ -64,13 +64,7 @@ export function AdminElectivesPage({
         <main>
             <h1>Admin electives</h1>
 
-            <SearchInput
-                id="admin-electives-search"
-                label="Search electives: "
-                value={query}
-                onChange={setQuery}
-                placeholder="Type to search"
-            />
+
 
             <AdminElectiveFiltersPanel
                 filters={filters}

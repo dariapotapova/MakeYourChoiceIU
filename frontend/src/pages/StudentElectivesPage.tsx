@@ -4,7 +4,6 @@ import type { Locale } from '../utils/electiveText';
 import type { StudentProfileElectiveType } from '../types/studentSidebar';
 import { useStudentElectivesPage } from '../hooks/useStudentElectivesPage';
 import { useStudentSidebar } from '../hooks/useStudentSidebar';
-import { SearchInput } from '../components/SearchInput';
 import { StudentSidebar } from '../components/StudentSidebar';
 import { StudentPageLayout } from '../components/StudentPageLayout';
 import { ElectivesList } from '../components/ElectivesList';
@@ -15,6 +14,7 @@ interface StudentElectivesPageProps {
     locale: Locale;
     favouriteIds: number[];
     availableElectiveTypes: StudentProfileElectiveType[];
+    query: string;
     onToggleFavourite?: (elective: Elective) => void;
 }
 
@@ -23,9 +23,9 @@ export function StudentElectivesPage({
                                          locale,
                                          favouriteIds,
                                          availableElectiveTypes,
+                                            query,
                                          onToggleFavourite,
                                      }: StudentElectivesPageProps) {
-    const [query, setQuery] = useState('');
 
     const {
         sections,
@@ -90,13 +90,7 @@ export function StudentElectivesPage({
             <section>
                 <h1>{activeSection.label}</h1>
 
-                <SearchInput
-                    id="student-electives-search"
-                    label="Search electives: "
-                    value={query}
-                    onChange={setQuery}
-                    placeholder="Type to search"
-                />
+
 
                 <StudentElectiveSelectionForm
                     electiveType={activeSection.electiveType ?? ''}
