@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.db.models import Count
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -126,7 +126,7 @@ class SettingsViewSet(viewsets.ViewSet):
             return Response({"status": "error"}, status=400)
         
         try:
-            program_obj = Program.objects.get(name=program)
+            program_obj = Program.objects.get(id=program)
             Track.objects.create(
                 name=name,
                 program=program_obj)
@@ -185,7 +185,7 @@ class SettingsViewSet(viewsets.ViewSet):
             if name:
                 track.name = name
             if program:
-                program_obj = Program.objects.get(name=program)
+                program_obj = Program.objects.get(id=program)
                 track.program = program_obj
             track.save()
             return Response({"status": "success"})
@@ -227,3 +227,53 @@ class SettingsViewSet(viewsets.ViewSet):
             return Response({"status": "success"})
         except ElectiveType.DoesNotExist:
             return Response({"status": "error"}, status=404)
+    
+
+    # GET command
+    @action(detail=False, methods=['get'], url_path='program')
+    def get_programs(self, request):
+        programs = Program.objects.all().values('id', 'name', 'language_id')
+
+        return Response({
+            "status": "success",
+            "programs": list(programs)
+        })
+    
+    @action(detail=False, methods=['get'], url_path='track')
+    def get_tracks(self, request):
+        tracks = Track.objects.all().values('id', 'name', 'program_id')
+
+        return Response({
+            "status": "success",
+            "tracks": list(tracks)
+        })
+    
+    @action(detail=False, methods=['get'], url_path='elective_type')
+    def get_elective_types(self, request):
+        elective_types = ElectiveType.objects.all().values('elective_type_name')
+
+        return Response({
+            "status": "success",
+            "elective_types": list(elective_types)
+        })
+    
+    @action(detail=False, methods=['get'], url_path='types_by_language')
+    def get_types_by_language(self, request):
+        data = (
+            Elective.objects
+            .filter(elective_type__isnull=False)
+            .values('program_language')
+            .annotate(count=Count('elective_type', distinct=True))
+        )
+
+        result = [
+            {
+                'language' : item['program_language'],
+                'count' : item['count']
+            }
+            for item in data
+        ]
+        return Response({
+            "status": "success",
+            "types_by_language": result
+        })
