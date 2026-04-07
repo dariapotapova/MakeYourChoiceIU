@@ -13,13 +13,13 @@ class Iteration(models.Model):
     id = models.BigAutoField(primary_key=True)
     year = models.IntegerField()
     season = models.CharField(max_length=6)
-#    streams = models.ManyToManyField(Stream) # в итоге это поле вроде не нужно тк есть табличка итер-стрим-релейшн
+    streams = models.ManyToManyField(Stream)
     deadline = models.DateTimeField()
 
 class StreamElectiveRelation(models.Model):
     stream_id = models.ForeignKey(Stream, on_delete=models.CASCADE)
     elective_id = models.ForeignKey(catalog_models.Elective, on_delete=models.CASCADE)
 
-class IterationStreamRelation(models.Model):
-    iteration_id = models.ForeignKey(Iteration, on_delete=models.CASCADE)
-    stream_id = models.ForeignKey(Stream, on_delete=models.CASCADE)
+# class IterationStreamRelation(models.Model):
+#     iteration_id = models.ForeignKey(Iteration, on_delete=models.CASCADE)
+#     stream_id = models.ForeignKey(Stream, on_delete=models.CASCADE)
