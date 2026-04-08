@@ -4,7 +4,7 @@ from .models import Stream, Iteration, StreamElectiveRelation
 
 @admin.register(Stream)
 class StreamAdmin(admin.ModelAdmin):
-    list_display = ('degree_year', 'program_lang', 'elective_type', 'priorities',)
+    list_display = ('id', 'degree_year', 'program_lang', 'elective_type', 'priorities',)
     search_fields = ('degree_year', 'program_lang', 'elective_type', 'programs', 'priorities',)
     filter_horizontal = ('programs',)
 
