@@ -3,11 +3,12 @@ import { useElectives } from './hooks/useElectives';
 import { StudentElectivesPage } from './pages/StudentElectivesPage';
 import { AdminElectivesPage } from './pages/AdminElectivesPage';
 import { AppShell } from './components/AppShell';
-import { archiveElective, deleteElective, updateElective } from './api/electives';
+import { archiveElective, deleteElective, updateElective, createElective } from './api/electives';
 import type { Elective } from './types/elective';
 import type { StudentProfileElectiveType } from './types/studentSidebar';
 import type { AuthUser } from './types/auth';
 import buttonStyles from './styles/button.module.css';
+import type { UpdateElectivePayload } from './api/electives';
 
 const MOCK_STUDENT_ELECTIVE_TYPES: StudentProfileElectiveType[] = [
     { type: 'TECH', label: 'Tech', requiredCount: 2 },
@@ -109,6 +110,34 @@ function App() {
         }
     }
 
+    async function handleCreateElective(payload: UpdateElectivePayload) {
+        try {
+            setActionError(null);
+            setActionLoadingId(-1);
+
+            await createElective(payload);
+            await refetch();
+        } catch (err) {
+            setActionError(err instanceof Error ? err.message : 'Failed to create elective');
+        } finally {
+            setActionLoadingId(null);
+        }
+    }
+
+    async function handleUpdateElective(id: number, payload: UpdateElectivePayload) {
+        try {
+            setActionError(null);
+            setActionLoadingId(id);
+
+            await updateElective(id, payload);
+            await refetch();
+        } catch (err) {
+            setActionError(err instanceof Error ? err.message : 'Failed to update elective');
+        } finally {
+            setActionLoadingId(null);
+        }
+    }
+
     if (loading) {
         return <div>Loading electives...</div>;
     }
@@ -174,10 +203,10 @@ function App() {
                     electives={electives}
                     locale="en"
                     query={query}
-                    onEdit={handleEdit}
+                    onCreateElective={handleCreateElective}
+                    onUpdateElective={handleUpdateElective}
                     onArchive={handleArchive}
                     onDelete={handleDelete}
-                    onAddElective={handleAddElective}
                 />
             )}
         </AppShell>

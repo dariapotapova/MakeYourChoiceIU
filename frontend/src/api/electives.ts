@@ -125,3 +125,20 @@ export async function deleteElective(id: number): Promise<void> {
         throw new Error(`HTTP error: ${response.status}`);
     }
 }
+
+export async function createElective(
+    payload: UpdateElectivePayload
+): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/`, {
+        method: 'POST',
+        headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+}
