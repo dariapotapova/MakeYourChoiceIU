@@ -1,8 +1,5 @@
 from rest_framework import serializers
-from .models import Admin, Student
 from catalog.models import Elective
-from iteration.models import Stream, Iteration, StreamElectiveRelation
-from voting.models import History
 
 class AdminElectiveSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,11 +32,13 @@ class ChosenElectivesSerializer(serializers.Serializer):
     electives = ChosenConcreteTypeElectivesSerializer(many=True)
 
 class StudentDataSerializer(serializers.Serializer):
+    iteration_id = serializers.IntegerField()
     deadline = serializers.DateTimeField(allow_null=True)
     available_electives = AvailableElectivesSerializer(many=True)
     chosen_electives = ChosenElectivesSerializer(many=True)
 
 class StudentResponseSerializer(serializers.Serializer):
+    student_id = serializers.IntegerField()
     role = serializers.CharField()
     email = serializers.CharField()
     student_data = StudentDataSerializer()
