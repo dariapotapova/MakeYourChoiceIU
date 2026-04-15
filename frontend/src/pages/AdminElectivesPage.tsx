@@ -4,7 +4,7 @@ import type { AdminElectiveFilters } from '../types/electivesList';
 import type { Locale } from '../utils/electiveText';
 import type { AdminSidebarItem, AdminSidebarItemType } from '../types/adminSidebar';
 import { useAdminElectivesPage } from '../hooks/useAdminElectivesPage';
-import { useAdminElectiveEditor } from "../hooks/useAdminelectiveEditor.ts";
+import { useAdminElectiveEditor } from '../hooks/useAdminElectiveEditor';
 import { AdminElectiveFilters as AdminElectiveFiltersPanel } from '../components/AdminElectiveFilters';
 import { ElectivesList } from '../components/ElectivesList';
 import { AdminElectivesSidebar } from '../components/AdminElectivesSidebar';

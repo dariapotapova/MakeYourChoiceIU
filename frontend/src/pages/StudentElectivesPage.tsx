@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { Elective } from '../types/elective';
 import type { Locale } from '../utils/electiveText';
 import type { StudentProfileElectiveType } from '../types/studentSidebar';
@@ -23,10 +23,9 @@ export function StudentElectivesPage({
                                          locale,
                                          favouriteIds,
                                          availableElectiveTypes,
-                                            query,
+                                         query,
                                          onToggleFavourite,
                                      }: StudentElectivesPageProps) {
-
     const {
         sections,
         activeSectionKey,
@@ -36,10 +35,6 @@ export function StudentElectivesPage({
         electiveTypes: availableElectiveTypes,
     });
 
-    /**
-     * Для student list activeType берём из sidebar.
-     * Если выбрана main, то type-filter не применяем.
-     */
     const activeType =
         activeSection?.kind === 'elective-type' && activeSection.electiveType
             ? activeSection.electiveType
@@ -52,12 +47,6 @@ export function StudentElectivesPage({
         activeType,
     });
 
-    /**
-     * Если sidebar переключился на тип, которого больше нет среди доступных tabs,
-     * откатимся на main.
-     *
-     * Это защита на случай обновления данных.
-     */
     useEffect(() => {
         if (activeSection?.kind !== 'elective-type') {
             return;
@@ -79,7 +68,6 @@ export function StudentElectivesPage({
             return (
                 <section>
                     <h1>Student electives</h1>
-
                     <p>Main page placeholder.</p>
                     <p>Here we will later show the latest submitted elective choices.</p>
                 </section>
@@ -89,8 +77,6 @@ export function StudentElectivesPage({
         return (
             <section>
                 <h1>{activeSection.label}</h1>
-
-
 
                 <StudentElectiveSelectionForm
                     electiveType={activeSection.electiveType ?? ''}
