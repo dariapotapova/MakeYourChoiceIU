@@ -1,12 +1,12 @@
-from django.db.models import Count
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
+from django.db.models import ProtectedError
 
 from .models import Elective, Program, ElectiveType, Track
-from .serializers import ElectiveSerializer, ProgramSerializer
+from .serializers import ElectiveSerializer, ProgramSerializer, TrackSerializer, ElectiveTypeSerializer
 
 class ElectiveViewSet(viewsets.ModelViewSet):
     serializer_class = ElectiveSerializer
@@ -80,6 +80,36 @@ class ProgramViewSet(viewsets.ModelViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response({"status": "success"}, status=201)
+        
+        return Response({"status": "error"}, status=400)
+    
+    def partial_update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success"})
+
+        return Response({"status": "error"}, status=400)
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response({"status": "success"}, status=200)
+
+class TrackViewSet(viewsets.ModelViewSet):
+    serializer_class = TrackSerializer
+    queryset = Track.objects.all()
+
+    http_method_names = ['get', 'post', 'patch', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success"}, status=201)
 
         return Response({"status": "error"}, status=400)
     
@@ -95,8 +125,28 @@ class ProgramViewSet(viewsets.ModelViewSet):
     
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        instance.delete()
+        return Response({"status": "success"}, status=200)
 
-        if instance is not None:
+class ElectiveTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = ElectiveTypeSerializer
+    queryset = ElectiveType.objects.all()
+
+    http_method_names = ['get', 'post', 'delete']
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"status": "success"}, status=201)
+
+        return Response({"status": "error"}, status=400)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            instance = self.get_object()
             instance.delete()
             return Response({"status": "success"})
-        return Response({"status": "error"}, status=400)
+        except ProtectedError:
+            return Response({"status": "error"}, status=400)
