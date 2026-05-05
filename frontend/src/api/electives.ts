@@ -1,4 +1,4 @@
-import type { Elective, ElectiveDto } from '../types/elective';
+import type { Elective, ElectiveDto, ElectiveStatus } from '../types/elective';
 import { getCsrfToken } from '../utils/csrf';
 
 const API_BASE_URL = '/api/electives';
@@ -52,11 +52,15 @@ export interface UpdateElectivePayload {
     instructor?: string;
     description?: string;
     elective_language?: string;
-    status?: 0 | 1;
+    status?: ElectiveStatus;
     prerequisite?: string;
     elective_type?: string;
     program_language?: string;
     degree_year?: string[];
+}
+
+interface ElectiveTypeDto {
+    elective_type_name: string;
 }
 
 export async function getElectiveById(id: number): Promise<Elective> {
@@ -79,6 +83,19 @@ export async function getElectives(): Promise<Elective[]> {
 
     const data = await handleJsonResponse<ElectiveDto[]>(response);
     return data.map(mapElectiveDto);
+}
+
+export async function getElectiveTypes(): Promise<string[]> {
+    const response = await fetch('/api/elective_types/', {
+        method: 'GET',
+        credentials: 'include',
+        headers: buildJsonHeaders(false),
+    });
+
+    const data = await handleJsonResponse<ElectiveTypeDto[]>(response);
+    return data
+        .map((item) => item.elective_type_name)
+        .sort((a, b) => a.localeCompare(b));
 }
 
 export async function createElective(
@@ -118,7 +135,7 @@ export async function archiveElective(id: number): Promise<Elective> {
         method: 'PATCH',
         credentials: 'include',
         headers: buildJsonHeaders(true),
-        body: JSON.stringify({ status: 1 }),
+        body: JSON.stringify({ status: 0 }),
     });
 
     const data = await handleJsonResponse<ElectiveDto>(response);
@@ -127,9 +144,10 @@ export async function archiveElective(id: number): Promise<Elective> {
 
 export async function deleteElective(id: number): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/${id}/`, {
-        method: 'DELETE',
+        method: 'PATCH',
         credentials: 'include',
-        headers: buildJsonHeaders(false),
+        headers: buildJsonHeaders(true),
+        body: JSON.stringify({ status: -1 }),
     });
 
     if (!response.ok) {

@@ -1,7 +1,7 @@
 import type { Elective, ElectiveStatus } from '../types/elective';
 import type { StudentDataResponse } from '../types/auth';
 
-type AdminElectiveResponse = {
+export type AdminElectiveResponse = {
     id: number;
     name: string;
     instructor: string;
@@ -14,9 +14,17 @@ type AdminElectiveResponse = {
     degree_year: string[];
 };
 
+function isNormalizedElective(elective: Elective | AdminElectiveResponse): elective is Elective {
+    return 'electiveLanguage' in elective;
+}
+
 export function mapAdminElectiveToElective(
-    elective: AdminElectiveResponse
+    elective: Elective | AdminElectiveResponse
 ): Elective {
+    if (isNormalizedElective(elective)) {
+        return elective;
+    }
+
     return {
         id: elective.id,
         name: elective.name,
@@ -32,7 +40,7 @@ export function mapAdminElectiveToElective(
 }
 
 export function mapAdminElectivesToElectives(
-    electives: AdminElectiveResponse[]
+    electives: Array<Elective | AdminElectiveResponse>
 ): Elective[] {
     return electives.map(mapAdminElectiveToElective);
 }

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Elective } from '../types/elective';
+import type { Elective, ElectiveStatus } from '../types/elective';
 import type { ElectiveEditorDraft, ElectiveEditorMode } from '../types/electiveEditor';
 import {
     createEmptyElectiveDraft,
@@ -10,6 +10,7 @@ interface AdminElectiveEditorState {
     isOpen: boolean;
     mode: ElectiveEditorMode;
     editingElectiveId: number | null;
+    editingElectiveStatus: ElectiveStatus | null;
     draft: ElectiveEditorDraft;
 }
 
@@ -17,6 +18,7 @@ interface UseAdminElectiveEditorResult {
     isOpen: boolean;
     mode: ElectiveEditorMode;
     editingElectiveId: number | null;
+    editingElectiveStatus: ElectiveStatus | null;
     draft: ElectiveEditorDraft;
     openAdd: (prefilledType?: string) => void;
     openEdit: (elective: Elective) => void;
@@ -36,6 +38,7 @@ export function useAdminElectiveEditor(): UseAdminElectiveEditorResult {
         isOpen: false,
         mode: 'add',
         editingElectiveId: null,
+        editingElectiveStatus: null,
         draft: createEmptyElectiveDraft(),
     });
 
@@ -44,6 +47,7 @@ export function useAdminElectiveEditor(): UseAdminElectiveEditorResult {
             isOpen: true,
             mode: 'add',
             editingElectiveId: null,
+            editingElectiveStatus: null,
             draft: createEmptyElectiveDraft(prefilledType),
         });
     }
@@ -53,6 +57,7 @@ export function useAdminElectiveEditor(): UseAdminElectiveEditorResult {
             isOpen: true,
             mode: 'edit',
             editingElectiveId: elective.id,
+            editingElectiveStatus: elective.status,
             draft: mapElectiveToEditorDraft(elective),
         });
     }
@@ -81,6 +86,7 @@ export function useAdminElectiveEditor(): UseAdminElectiveEditorResult {
         isOpen: state.isOpen,
         mode: state.mode,
         editingElectiveId: state.editingElectiveId,
+        editingElectiveStatus: state.editingElectiveStatus,
         draft: state.draft,
         openAdd,
         openEdit,

@@ -122,13 +122,15 @@ export function filterAdminElectives(
             !filters.degreeYear || elective.degreeYear.includes(filters.degreeYear);
 
         const matchesType =
-            !filters.electiveType || elective.electiveType === filters.electiveType;
+            filters.electiveTypes.length === 0 ||
+            filters.electiveTypes.includes(elective.electiveType);
 
         const matchesProgramLanguage =
             !filters.programLanguage || elective.programLanguage === filters.programLanguage;
 
         const matchesStatus =
-            !filters.status || String(elective.status) === filters.status;
+            filters.statuses.length === 0 ||
+            filters.statuses.includes(elective.status);
 
         return (
             matchesLanguage &&

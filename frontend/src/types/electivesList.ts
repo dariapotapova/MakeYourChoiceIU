@@ -1,3 +1,5 @@
+import type { ElectiveStatus } from './elective';
+
 export interface StudentElectiveTypeTab {
     value: string;
     label: string;
@@ -6,7 +8,7 @@ export interface StudentElectiveTypeTab {
 export interface AdminElectiveFilters {
     electiveLanguage: string;
     degreeYear: string;
-    electiveType: string;
+    electiveTypes: string[];
     programLanguage: string;
-    status: string;
+    statuses: ElectiveStatus[];
 }

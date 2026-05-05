@@ -1,6 +1,9 @@
-export type AdminSidebarItemType = 'all' | 'tech' | 'hum' | 'math' | 'custom' | string;
+import type { ElectiveStatus } from './elective';
 
 export interface AdminSidebarItem {
-    type: AdminSidebarItemType;
+    id: string;
+    kind: 'reset' | 'status' | 'type';
     title: string;
+    status?: ElectiveStatus;
+    electiveType?: string;
 }

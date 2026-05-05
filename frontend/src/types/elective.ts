@@ -1,4 +1,4 @@
-export type ElectiveStatus = 0 | 1;
+export type ElectiveStatus = -1 | 0 | 1;
 
 export interface ElectiveDto {
     id: number;

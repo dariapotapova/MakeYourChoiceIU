@@ -97,7 +97,7 @@ export function useAuth(): UseAuthResult {
             return [];
         }
 
-        return mapAdminElectivesToElectives(authResponse.all_electives as any[]);
+        return mapAdminElectivesToElectives(authResponse.all_electives);
     }, [authResponse]);
 
     async function login(email: string) {

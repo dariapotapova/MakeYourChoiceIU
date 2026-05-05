@@ -2,18 +2,15 @@ import { useState } from 'react';
 import type { Elective } from '../types/elective';
 import type { AdminElectiveFilters } from '../types/electivesList';
 import type { Locale } from '../utils/electiveText';
-import type { AdminSidebarItem, AdminSidebarItemType } from '../types/adminSidebar';
 import { useAdminElectivesPage } from '../hooks/useAdminElectivesPage';
 import { useAdminElectiveEditor } from '../hooks/useAdminElectiveEditor';
+import { useAdminSidebarFilters } from '../hooks/useAdminSidebarFilters';
 import { AdminElectiveFilters as AdminElectiveFiltersPanel } from '../components/AdminElectiveFilters';
 import { ElectivesList } from '../components/ElectivesList';
 import { AdminElectivesSidebar } from '../components/AdminElectivesSidebar';
 import { AdminPageLayout } from '../components/AdminPageLayout';
 import { ElectiveEditorModal } from '../components/ElectiveEditorModal';
-import {
-    mapDraftToElectivePayload,
-    mapSidebarItemsToEditorTypeOptions,
-} from '../utils/electiveEditor';
+import { mapDraftToElectivePayload } from '../utils/electiveEditor';
 import type { UpdateElectivePayload } from '../api/electives';
 
 interface AdminElectivesPageProps {
@@ -29,17 +26,10 @@ interface AdminElectivesPageProps {
 const INITIAL_FILTERS: AdminElectiveFilters = {
     electiveLanguage: '',
     degreeYear: '',
-    electiveType: '',
+    electiveTypes: [],
     programLanguage: '',
-    status: '',
+    statuses: [],
 };
-
-const SIDEBAR_ITEMS: AdminSidebarItem[] = [
-    { type: 'all', title: 'All electives' },
-    { type: 'TECH', title: 'Tech' },
-    { type: 'HUM', title: 'Hum' },
-    { type: 'MATH', title: 'Math' },
-];
 
 export function AdminElectivesPage({
                                        electives,
@@ -50,24 +40,30 @@ export function AdminElectivesPage({
                                        onArchive,
                                        onDelete,
                                    }: AdminElectivesPageProps) {
-    const [activeType, setActiveType] = useState<AdminSidebarItemType>('all');
     const [filters, setFilters] = useState<AdminElectiveFilters>(INITIAL_FILTERS);
     const [saving, setSaving] = useState(false);
 
     const editor = useAdminElectiveEditor();
+    const sidebar = useAdminSidebarFilters({ electives });
 
     const effectiveFilters: AdminElectiveFilters = {
         ...filters,
-        electiveType: activeType === 'all' ? filters.electiveType : String(activeType),
+        electiveTypes: sidebar.selectedElectiveTypes,
+        statuses: sidebar.selectedStatuses,
     };
+
+    const isAllElectivesSelected =
+        filters.electiveLanguage === '' &&
+        filters.degreeYear === '' &&
+        filters.programLanguage === '' &&
+        sidebar.selectedElectiveTypes.length === 0 &&
+        sidebar.selectedStatuses.length === 0;
 
     const { visibleElectives, filterOptions } = useAdminElectivesPage({
         electives,
         query,
         filters: effectiveFilters,
     });
-
-    const typeOptions = mapSidebarItemsToEditorTypeOptions(SIDEBAR_ITEMS);
 
     function updateFilter<Key extends keyof AdminElectiveFilters>(
         key: Key,
@@ -79,13 +75,14 @@ export function AdminElectivesPage({
         }));
     }
 
-    function resetFilters() {
+    function resetAllFilters() {
         setFilters(INITIAL_FILTERS);
-        setActiveType('all');
+        sidebar.resetFilters();
     }
 
     function handleAddElective() {
-        const prefilledType = activeType === 'all' ? '' : String(activeType);
+        const prefilledType =
+            sidebar.selectedElectiveTypes.length === 1 ? sidebar.selectedElectiveTypes[0] : '';
         editor.openAdd(prefilledType);
     }
 
@@ -94,14 +91,20 @@ export function AdminElectivesPage({
     }
 
     async function handleSave() {
-        const payload = mapDraftToElectivePayload(editor.draft);
-
         try {
             setSaving(true);
 
             if (editor.mode === 'add') {
+                const payload = mapDraftToElectivePayload(editor.draft, 1);
                 await onCreateElective(payload);
-            } else if (editor.editingElectiveId !== null) {
+            } else if (
+                editor.editingElectiveId !== null &&
+                editor.editingElectiveStatus !== null
+            ) {
+                const payload = mapDraftToElectivePayload(
+                    editor.draft,
+                    editor.editingElectiveStatus
+                );
                 await onUpdateElective(editor.editingElectiveId, payload);
             }
 
@@ -116,9 +119,17 @@ export function AdminElectivesPage({
             <AdminPageLayout
                 sidebar={
                     <AdminElectivesSidebar
-                        items={SIDEBAR_ITEMS}
-                        active={activeType}
-                        onChange={setActiveType}
+                        items={sidebar.items}
+                        isResetActive={isAllElectivesSelected}
+                        selectedItemIds={sidebar.selectedItemIds}
+                        onToggle={(item) => {
+                            if (item.kind === 'reset') {
+                                resetAllFilters();
+                                return;
+                            }
+
+                            sidebar.toggleItem(item);
+                        }}
                         addLabel="Add elective"
                         onAdd={handleAddElective}
                     />
@@ -131,7 +142,7 @@ export function AdminElectivesPage({
                             filters={filters}
                             filterOptions={filterOptions}
                             onChange={updateFilter}
-                            onReset={resetFilters}
+                            onReset={resetAllFilters}
                         />
 
                         <ElectivesList
@@ -152,7 +163,7 @@ export function AdminElectivesPage({
                 open={editor.isOpen}
                 mode={editor.mode}
                 draft={editor.draft}
-                typeOptions={typeOptions}
+                typeOptions={sidebar.typeOptions}
                 onClose={editor.close}
                 onChangeField={editor.updateField}
                 onSave={handleSave}

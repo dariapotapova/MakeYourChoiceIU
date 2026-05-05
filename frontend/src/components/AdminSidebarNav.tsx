@@ -1,28 +1,33 @@
-import type { AdminSidebarItem, AdminSidebarItemType } from '../types/adminSidebar';
+import type { AdminSidebarItem } from '../types/adminSidebar';
 import buttonStyles from '../styles/button.module.css';
 import styles from '../styles/adminElectivesSidebar.module.css';
 
 interface AdminSidebarNavProps {
     items: AdminSidebarItem[];
-    active: AdminSidebarItemType;
-    onChange: (type: AdminSidebarItemType) => void;
+    isResetActive: boolean;
+    selectedItemIds: string[];
+    onToggle: (item: AdminSidebarItem) => void;
 }
 
 export function AdminSidebarNav({
                                     items,
-                                    active,
-                                    onChange,
+                                    isResetActive,
+                                    selectedItemIds,
+                                    onToggle,
                                 }: AdminSidebarNavProps) {
     return (
         <nav className={styles.nav} aria-label="Admin elective categories">
             {items.map((item) => {
-                const isActive = item.type === active;
+                const isActive =
+                    item.kind === 'reset'
+                        ? isResetActive
+                        : selectedItemIds.includes(item.id);
 
                 return (
                     <button
-                        key={item.type}
+                        key={item.id}
                         type="button"
-                        onClick={() => onChange(item.type)}
+                        onClick={() => onToggle(item)}
                         aria-pressed={isActive}
                         className={[
                             buttonStyles.button,

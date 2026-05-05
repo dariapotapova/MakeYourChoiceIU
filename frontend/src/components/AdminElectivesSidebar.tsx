@@ -1,12 +1,13 @@
-import type { AdminSidebarItem, AdminSidebarItemType } from '../types/adminSidebar';
+import type { AdminSidebarItem } from '../types/adminSidebar';
 import { AdminSidebarNav } from './AdminSidebarNav';
 import buttonStyles from '../styles/button.module.css';
 import styles from '../styles/adminElectivesSidebar.module.css';
 
 interface AdminElectivesSidebarProps {
     items: AdminSidebarItem[];
-    active: AdminSidebarItemType;
-    onChange: (type: AdminSidebarItemType) => void;
+    isResetActive: boolean;
+    selectedItemIds: string[];
+    onToggle: (item: AdminSidebarItem) => void;
     addLabel: string;
     onAdd: () => void;
 }
@@ -21,8 +22,9 @@ interface AdminElectivesSidebarProps {
  */
 export function AdminElectivesSidebar({
                                           items,
-                                          active,
-                                          onChange,
+                                          isResetActive,
+                                          selectedItemIds,
+                                          onToggle,
                                           addLabel,
                                           onAdd,
                                       }: AdminElectivesSidebarProps) {
@@ -41,7 +43,12 @@ export function AdminElectivesSidebar({
                 {addLabel}
             </button>
 
-            <AdminSidebarNav items={items} active={active} onChange={onChange} />
+            <AdminSidebarNav
+                items={items}
+                isResetActive={isResetActive}
+                selectedItemIds={selectedItemIds}
+                onToggle={onToggle}
+            />
         </aside>
     );
 }

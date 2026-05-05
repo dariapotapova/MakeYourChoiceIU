@@ -1,8 +1,7 @@
-import type { Elective } from '../types/elective';
+import type { Elective, ElectiveStatus } from '../types/elective';
 import type {
     ElectiveEditorDraft,
     ElectiveEditorTypeOption,
-    ElectiveMutationStatus,
 } from '../types/electiveEditor';
 import type { AdminSidebarItem } from '../types/adminSidebar';
 import type { UpdateElectivePayload } from '../api/electives';
@@ -81,7 +80,8 @@ function mapEditorLanguageToApi(language: 'ENG' | 'RUS' | ''): string {
  * - бэк ждёт snake_case и свои имена полей
  */
 export function mapDraftToElectivePayload(
-    draft: ElectiveEditorDraft
+    draft: ElectiveEditorDraft,
+    status: ElectiveStatus
 ): UpdateElectivePayload {
     return {
         name: draft.title.trim(),
@@ -92,7 +92,7 @@ export function mapDraftToElectivePayload(
         elective_type: draft.electiveType.trim(),
         program_language: draft.program,
         degree_year: draft.yearsOfStudy,
-        status: 0,
+        status,
     };
 }
 /**
@@ -103,9 +103,9 @@ export function mapSidebarItemsToEditorTypeOptions(
     items: AdminSidebarItem[]
 ): ElectiveEditorTypeOption[] {
     return items
-        .filter((item) => item.type !== 'all')
+        .filter((item) => item.kind === 'type' && Boolean(item.electiveType))
         .map((item) => ({
-            value: String(item.type),
+            value: item.electiveType ?? '',
             label: item.title,
         }));
 }

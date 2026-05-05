@@ -5,9 +5,7 @@ interface AdminElectiveFiltersProps {
     filterOptions: {
         electiveLanguages: string[];
         degreeYears: string[];
-        electiveTypes: string[];
         programLanguages: string[];
-        statuses: string[];
     };
     onChange: <K extends keyof AdminElectiveFilters>(
         key: K,
@@ -63,21 +61,6 @@ export function AdminElectiveFilters({
             </label>
 
             <label>
-                Elective type:
-                <select
-                    value={filters.electiveType}
-                    onChange={(event) => onChange('electiveType', event.target.value)}
-                >
-                    <option value="">All</option>
-                    {filterOptions.electiveTypes.map((value) => (
-                        <option key={`type-${value}`} value={value}>
-                            {value}
-                        </option>
-                    ))}
-                </select>
-            </label>
-
-            <label>
                 Program language:
                 <select
                     value={filters.programLanguage}
@@ -86,21 +69,6 @@ export function AdminElectiveFilters({
                     <option value="">All</option>
                     {filterOptions.programLanguages.map((value) => (
                         <option key={`program-${value}`} value={value}>
-                            {value}
-                        </option>
-                    ))}
-                </select>
-            </label>
-
-            <label>
-                Status:
-                <select
-                    value={filters.status}
-                    onChange={(event) => onChange('status', event.target.value)}
-                >
-                    <option value="">All</option>
-                    {filterOptions.statuses.map((value) => (
-                        <option key={`status-${value}`} value={value}>
                             {value}
                         </option>
                     ))}
