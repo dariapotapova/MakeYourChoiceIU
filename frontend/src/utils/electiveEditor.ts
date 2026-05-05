@@ -5,6 +5,7 @@ import type {
 } from '../types/electiveEditor';
 import type { AdminSidebarItem } from '../types/adminSidebar';
 import type { UpdateElectivePayload } from '../api/electives';
+import { normalizeStoredMarkdown } from './markdown';
 
 /**
  * Пустой draft для add flow.
@@ -39,7 +40,7 @@ export function mapElectiveToEditorDraft(elective: Elective): ElectiveEditorDraf
                 : '',
         yearsOfStudy: elective.degreeYear,
         prerequisite: elective.prerequisite,
-        description: elective.description,
+        description: normalizeStoredMarkdown(elective.description),
     };
 }
 

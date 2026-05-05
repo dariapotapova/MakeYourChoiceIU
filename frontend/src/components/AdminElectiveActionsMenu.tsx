@@ -10,10 +10,13 @@ interface AdminElectiveActionsMenuProps {
     openMenuLabel: string;
     editLabel: string;
     archiveLabel: string;
+    unarchiveLabel: string;
     deleteLabel: string;
+    restoreLabel: string;
     onEdit?: (elective: Elective) => void;
     onArchive?: (elective: Elective) => void;
     onDelete?: (elective: Elective) => void;
+    onRestore?: (elective: Elective) => void;
 }
 
 export function AdminElectiveActionsMenu({
@@ -21,10 +24,13 @@ export function AdminElectiveActionsMenu({
                                              openMenuLabel,
                                              editLabel,
                                              archiveLabel,
+                                             unarchiveLabel,
                                              deleteLabel,
+                                             restoreLabel,
                                              onEdit,
                                              onArchive,
                                              onDelete,
+                                             onRestore,
                                          }: AdminElectiveActionsMenuProps) {
     const { isOpen, toggle, close } = useDisclosure(false);
 
@@ -48,6 +54,11 @@ export function AdminElectiveActionsMenu({
         onDelete?.(elective);
     }
 
+    function handleRestore() {
+        close();
+        onRestore?.(elective);
+    }
+
     return (
         <div ref={containerRef} className={styles.wrap}>
             <button
@@ -61,32 +72,45 @@ export function AdminElectiveActionsMenu({
 
             {isOpen ? (
                 <div role="menu" className={styles.menu}>
-                    <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleEdit}
-                        className={styles.menuItem}
-                    >
-                        {editLabel}
-                    </button>
+                    {elective.status === -1 ? (
+                        <button
+                            type="button"
+                            role="menuitem"
+                            onClick={handleRestore}
+                            className={styles.menuItem}
+                        >
+                            {restoreLabel}
+                        </button>
+                    ) : (
+                        <>
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={handleEdit}
+                                className={styles.menuItem}
+                            >
+                                {editLabel}
+                            </button>
 
-                    <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleArchive}
-                        className={styles.menuItem}
-                    >
-                        {archiveLabel}
-                    </button>
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={elective.status === 0 ? handleRestore : handleArchive}
+                                className={styles.menuItem}
+                            >
+                                {elective.status === 0 ? unarchiveLabel : archiveLabel}
+                            </button>
 
-                    <button
-                        type="button"
-                        role="menuitem"
-                        onClick={handleDelete}
-                        className={`${styles.menuItem} ${styles.danger}`}
-                    >
-                        {deleteLabel}
-                    </button>
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={handleDelete}
+                                className={`${styles.menuItem} ${styles.danger}`}
+                            >
+                                {deleteLabel}
+                            </button>
+                        </>
+                    )}
                 </div>
             ) : null}
         </div>

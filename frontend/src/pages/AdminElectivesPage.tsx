@@ -21,6 +21,7 @@ interface AdminElectivesPageProps {
     onUpdateElective: (id: number, payload: UpdateElectivePayload) => Promise<void>;
     onArchive?: (elective: Elective) => void;
     onDelete?: (elective: Elective) => void;
+    onRestore?: (elective: Elective) => void;
 }
 
 const INITIAL_FILTERS: AdminElectiveFilters = {
@@ -39,6 +40,7 @@ export function AdminElectivesPage({
                                        onUpdateElective,
                                        onArchive,
                                        onDelete,
+                                       onRestore,
                                    }: AdminElectivesPageProps) {
     const [filters, setFilters] = useState<AdminElectiveFilters>(INITIAL_FILTERS);
     const [saving, setSaving] = useState(false);
@@ -153,6 +155,7 @@ export function AdminElectivesPage({
                             onEdit={handleEditElective}
                             onArchive={onArchive}
                             onDelete={onDelete}
+                            onRestore={onRestore}
                             emptyText="No electives match the current admin filters"
                         />
                     </section>

@@ -1,5 +1,6 @@
 import type { Elective, ElectiveStatus } from '../types/elective';
 import type { StudentDataResponse } from '../types/auth';
+import { normalizeStoredMarkdown } from './markdown';
 
 export type AdminElectiveResponse = {
     id: number;
@@ -29,7 +30,7 @@ export function mapAdminElectiveToElective(
         id: elective.id,
         name: elective.name,
         instructor: elective.instructor,
-        description: elective.description,
+        description: normalizeStoredMarkdown(elective.description),
         electiveLanguage: elective.elective_language,
         status: elective.status,
         prerequisite: elective.prerequisite,
@@ -51,7 +52,7 @@ export function mapStudentDataToElectives(studentData: StudentDataResponse): Ele
             id: elective.id,
             name: elective.name,
             instructor: elective.instructor,
-            description: elective.description,
+            description: normalizeStoredMarkdown(elective.description),
             electiveLanguage: elective.elective_language,
             status: 0,
             prerequisite: elective.prerequisite,

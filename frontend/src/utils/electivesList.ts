@@ -65,6 +65,36 @@ export function sortElectivesFavouritesFirst(
         .map((item) => item.elective);
 }
 
+function getAdminStatusRank(status: Elective['status']): number {
+    if (status === 1) {
+        return 0;
+    }
+
+    if (status === 0) {
+        return 1;
+    }
+
+    return 2;
+}
+
+export function sortAdminElectives(electives: Elective[]): Elective[] {
+    return [...electives].sort((a, b) => {
+        const statusDiff = getAdminStatusRank(a.status) - getAdminStatusRank(b.status);
+
+        if (statusDiff !== 0) {
+            return statusDiff;
+        }
+
+        const nameDiff = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+
+        if (nameDiff !== 0) {
+            return nameDiff;
+        }
+
+        return a.id - b.id;
+    });
+}
+
 /**
  * Student filter по типу электива.
  */

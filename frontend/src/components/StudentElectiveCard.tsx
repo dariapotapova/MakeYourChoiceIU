@@ -9,6 +9,7 @@ import { ELECTIVE_TEXT, type Locale } from '../utils/electiveText';
 import { highlight } from '../utils/electiveSearch';
 import buttonStyles from '../styles/button.module.css';
 import ReactMarkdown from 'react-markdown';
+import markdownStyles from './ElectiveCardMarkdown.module.css';
 
 const MarkdownRenderer = ReactMarkdown as unknown as React.ComponentType<{
     children: string;
@@ -32,31 +33,9 @@ export function StudentElectiveCard({
     const { isOpen, open, close } = useDisclosure(false);
     const text = ELECTIVE_TEXT[locale];
 
-    const { normalizedQuery, previewRaw, longOnly, snippet } = useElectiveSearch(
-        elective,
-        query
-    );
-
+    const { normalizedQuery } = useElectiveSearch(elective, query);
     const previewLimit = 240;
-
-    /**
-     * Базовый текст превью.
-     * Это именно текстовый источник, без JSX и без markdown-render.
-     */
-    const descriptionPreviewText =
-        longOnly && snippet
-            ? snippet
-            : elective.description.length > previewLimit
-                ? `${previewRaw}…`
-                : previewRaw;
-
-    /**
-     * Отдельно готовим highlighted-версию для режима поиска.
-     */
-    const descriptionPreviewHighlighted = highlight(
-        descriptionPreviewText,
-        normalizedQuery
-    );
+    const isCollapsed = !normalizedQuery && elective.description.length > previewLimit;
 
     return (
         <>
@@ -76,17 +55,14 @@ export function StudentElectiveCard({
                 }
                 descriptionContent={
                     <div>
-                        {normalizedQuery ? (
-                            <p>{descriptionPreviewHighlighted}</p>
-                        ) : (
-                            <div>
-                                <MarkdownRenderer>{descriptionPreviewText}</MarkdownRenderer>
-                            </div>
-                        )}
-
-                        {longOnly ? (
-                            <div>{text.hints.matchInFullDescription}</div>
-                        ) : null}
+                        <div
+                            className={[
+                                markdownStyles.markdown,
+                                isCollapsed ? markdownStyles.collapsed : '',
+                            ].join(' ').trim()}
+                        >
+                            <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                        </div>
                     </div>
                 }
                 footer={
@@ -125,7 +101,9 @@ export function StudentElectiveCard({
                     </p>
 
                     <div>
-                        <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                        <div className={markdownStyles.markdown}>
+                            <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                        </div>
                     </div>
                 </div>
             </ElectiveModal>

@@ -9,10 +9,38 @@ import { ELECTIVE_TEXT, type Locale } from '../utils/electiveText';
 import { highlight } from '../utils/electiveSearch';
 import buttonStyles from '../styles/button.module.css';
 import ReactMarkdown from 'react-markdown';
+import styles from './AdminElectiveCard.module.css';
+import markdownStyles from './ElectiveCardMarkdown.module.css';
 
 const MarkdownRenderer = ReactMarkdown as unknown as React.ComponentType<{
     children: string;
 }>;
+
+function getStatusPresentation(
+    elective: Elective,
+    locale: Locale
+): { label: string; className: string } {
+    const statusText = ELECTIVE_TEXT[locale].statuses;
+
+    if (elective.status === 1) {
+        return {
+            label: statusText.active,
+            className: `${styles.statusBadge} ${styles.statusActive}`,
+        };
+    }
+
+    if (elective.status === 0) {
+        return {
+            label: statusText.archived,
+            className: `${styles.statusBadge} ${styles.statusArchived}`,
+        };
+    }
+
+    return {
+        label: statusText.deleted,
+        className: `${styles.statusBadge} ${styles.statusDeleted}`,
+    };
+}
 
 interface AdminElectiveCardProps {
     elective: Elective;
@@ -21,6 +49,7 @@ interface AdminElectiveCardProps {
     onEdit?: (elective: Elective) => void;
     onArchive?: (elective: Elective) => void;
     onDelete?: (elective: Elective) => void;
+    onRestore?: (elective: Elective) => void;
 }
 
 export function AdminElectiveCard({
@@ -30,40 +59,27 @@ export function AdminElectiveCard({
                                       onEdit,
                                       onArchive,
                                       onDelete,
+                                      onRestore,
                                   }: AdminElectiveCardProps) {
     const { isOpen, open, close } = useDisclosure(false);
     const text = ELECTIVE_TEXT[locale];
+    const statusPresentation = getStatusPresentation(elective, locale);
 
-    const { normalizedQuery, previewRaw, longOnly, snippet } = useElectiveSearch(
-        elective,
-        query
-    );
-
+    const { normalizedQuery } = useElectiveSearch(elective, query);
     const previewLimit = 240;
-
-    /**
-     * Базовый текст превью.
-     */
-    const descriptionPreviewText =
-        longOnly && snippet
-            ? snippet
-            : elective.description.length > previewLimit
-                ? `${previewRaw}…`
-                : previewRaw;
-
-    /**
-     * Highlighted-версия только для режима поиска.
-     */
-    const descriptionPreviewHighlighted = highlight(
-        descriptionPreviewText,
-        normalizedQuery
-    );
+    const isCollapsed = !normalizedQuery && elective.description.length > previewLimit;
 
     return (
         <>
             <ElectiveCardBase
                 elective={elective}
+                muted={elective.status === 0}
                 titleContent={highlight(elective.name, normalizedQuery)}
+                titleMeta={
+                    <span className={statusPresentation.className}>
+                        {statusPresentation.label}
+                    </span>
+                }
                 instructorContent={highlight(elective.instructor, normalizedQuery)}
                 languageContent={highlight(elective.electiveLanguage, normalizedQuery)}
                 prerequisiteContent={highlight(elective.prerequisite, normalizedQuery)}
@@ -73,31 +89,31 @@ export function AdminElectiveCard({
                         openMenuLabel={text.actions.openMenu}
                         editLabel={text.actions.edit}
                         archiveLabel={text.actions.archive}
+                        unarchiveLabel={text.actions.unarchive}
                         deleteLabel={text.actions.delete}
+                        restoreLabel={text.actions.restore}
                         onEdit={onEdit}
                         onArchive={onArchive}
                         onDelete={onDelete}
+                        onRestore={onRestore}
                     />
                 }
                 descriptionContent={
                     <div>
-                        {normalizedQuery ? (
-                            <p>{descriptionPreviewHighlighted}</p>
-                        ) : (
-                            <div>
-                                <MarkdownRenderer>{descriptionPreviewText}</MarkdownRenderer>
-                            </div>
-                        )}
-
-                        {longOnly ? (
-                            <div>{text.hints.matchInFullDescription}</div>
-                        ) : null}
+                        <div
+                            className={[
+                                markdownStyles.markdown,
+                                isCollapsed ? markdownStyles.collapsed : '',
+                            ].join(' ').trim()}
+                        >
+                            <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                        </div>
                     </div>
                 }
                 extraInfo={
                     <div>
                         <p>
-                            {text.meta.status}: {String(elective.status)}
+                            {text.meta.status}: {statusPresentation.label}
                         </p>
                         <p>
                             {text.meta.type}: {elective.electiveType}
@@ -126,31 +142,47 @@ export function AdminElectiveCard({
                 title={elective.name}
                 onClose={close}
                 footer={
-                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                        <button
-                            type="button"
-                            onClick={() => onEdit?.(elective)}
-                            className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
-                        >
-                            {text.actions.edit}
-                        </button>
+                    elective.status === -1 ? (
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                                type="button"
+                                onClick={() => onRestore?.(elective)}
+                                className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
+                            >
+                                {text.actions.restore}
+                            </button>
+                        </div>
+                    ) : (
+                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                            <button
+                                type="button"
+                                onClick={() => onEdit?.(elective)}
+                                className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
+                            >
+                                {text.actions.edit}
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={() => onArchive?.(elective)}
-                            className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
-                        >
-                            {text.actions.archive}
-                        </button>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    elective.status === 0
+                                        ? onRestore?.(elective)
+                                        : onArchive?.(elective)
+                                }
+                                className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
+                            >
+                                {elective.status === 0 ? text.actions.unarchive : text.actions.archive}
+                            </button>
 
-                        <button
-                            type="button"
-                            onClick={() => onDelete?.(elective)}
-                            className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
-                        >
-                            {text.actions.delete}
-                        </button>
-                    </div>
+                            <button
+                                type="button"
+                                onClick={() => onDelete?.(elective)}
+                                className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
+                            >
+                                {text.actions.delete}
+                            </button>
+                        </div>
+                    )
                 }
             >
                 <div>
@@ -164,7 +196,7 @@ export function AdminElectiveCard({
                         {text.meta.prerequisite}: {highlight(elective.prerequisite, normalizedQuery)}
                     </p>
                     <p>
-                        {text.meta.status}: {String(elective.status)}
+                        {text.meta.status}: {statusPresentation.label}
                     </p>
                     <p>
                         {text.meta.type}: {elective.electiveType}
@@ -177,7 +209,9 @@ export function AdminElectiveCard({
                     </p>
 
                     <div>
-                        <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                        <div className={markdownStyles.markdown}>
+                            <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                        </div>
                     </div>
                 </div>
             </ElectiveModal>

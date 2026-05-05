@@ -8,6 +8,7 @@ import {
     type UpdateElectivePayload,
 } from '../api/electives';
 import type { Elective } from '../types/elective';
+import { sortAdminElectives } from '../utils/electivesList';
 
 interface UseAdminElectivesFlowParams {
     canManageElectives: boolean;
@@ -21,6 +22,7 @@ interface UseAdminElectivesFlowResult {
     handleUpdateElective: (id: number, payload: UpdateElectivePayload) => Promise<void>;
     handleArchiveElective: (elective: Elective) => Promise<void>;
     handleDeleteElective: (elective: Elective) => Promise<void>;
+    handleRestoreElective: (elective: Elective) => Promise<void>;
     resetActionState: () => void;
 }
 
@@ -37,7 +39,7 @@ export function useAdminElectivesFlow({
         }
 
         const nextElectives = await getElectives();
-        setAdminElectives(nextElectives);
+        setAdminElectives(sortAdminElectives(nextElectives));
     }, [canManageElectives, setAdminElectives]);
 
     const resetActionState = useCallback(() => {
@@ -112,6 +114,20 @@ export function useAdminElectivesFlow({
         }
     }, [refreshElectives]);
 
+    const handleRestoreElective = useCallback(async (elective: Elective) => {
+        try {
+            setActionError(null);
+            setActionLoadingId(elective.id);
+
+            await updateElective(elective.id, { status: 1 });
+            await refreshElectives();
+        } catch (err) {
+            setActionError(err instanceof Error ? err.message : 'Failed to restore elective');
+        } finally {
+            setActionLoadingId(null);
+        }
+    }, [refreshElectives]);
+
     return {
         actionError,
         actionLoadingId,
@@ -119,6 +135,7 @@ export function useAdminElectivesFlow({
         handleUpdateElective,
         handleArchiveElective,
         handleDeleteElective,
+        handleRestoreElective,
         resetActionState,
     };
 }

@@ -1,5 +1,6 @@
 import type { Elective, ElectiveDto, ElectiveStatus } from '../types/elective';
 import { getCsrfToken } from '../utils/csrf';
+import { normalizeStoredMarkdown } from '../utils/markdown';
 
 const API_BASE_URL = '/api/electives';
 
@@ -8,7 +9,7 @@ function mapElectiveDto(dto: ElectiveDto): Elective {
         id: dto.id,
         name: dto.name,
         instructor: dto.instructor,
-        description: dto.description,
+        description: normalizeStoredMarkdown(dto.description),
         electiveLanguage: dto.elective_language,
         status: dto.status,
         prerequisite: dto.prerequisite,

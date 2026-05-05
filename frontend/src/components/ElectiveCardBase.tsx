@@ -4,12 +4,14 @@ import styles from './ElectiveCardBase.module.css';
 
 interface ElectiveCardBaseProps {
     elective: Elective;
+    muted?: boolean;
     headerAction?: ReactNode;
     extraInfo?: ReactNode;
     footer?: ReactNode;
     descriptionContent?: ReactNode;
 
     titleContent?: ReactNode;
+    titleMeta?: ReactNode;
     instructorContent?: ReactNode;
     languageContent?: ReactNode;
     prerequisiteContent?: ReactNode;
@@ -17,19 +19,24 @@ interface ElectiveCardBaseProps {
 
 export function ElectiveCardBase({
                                      elective,
+                                     muted = false,
                                      headerAction,
                                      extraInfo,
                                      footer,
                                      descriptionContent,
                                      titleContent,
+                                     titleMeta,
                                      instructorContent,
                                      languageContent,
                                      prerequisiteContent,
                                  }: ElectiveCardBaseProps) {
     return (
-        <article className={styles.card}>
+        <article className={[styles.card, muted ? styles.muted : ''].join(' ').trim()}>
             <header className={styles.header}>
-                <h3 className={styles.title}>{titleContent ?? elective.name}</h3>
+                <div className={styles.titleBlock}>
+                    <h3 className={styles.title}>{titleContent ?? elective.name}</h3>
+                    {titleMeta ? <div className={styles.titleMeta}>{titleMeta}</div> : null}
+                </div>
                 {headerAction}
             </header>
 

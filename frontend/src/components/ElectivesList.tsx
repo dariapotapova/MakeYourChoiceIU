@@ -15,6 +15,7 @@ interface ElectivesListProps {
     onEdit?: (elective: Elective) => void;
     onArchive?: (elective: Elective) => void;
     onDelete?: (elective: Elective) => void;
+    onRestore?: (elective: Elective) => void;
 
     emptyText?: string;
 }
@@ -39,6 +40,7 @@ export function ElectivesList({
                                   onEdit,
                                   onArchive,
                                   onDelete,
+                                  onRestore,
                                   emptyText = 'No electives found',
                               }: ElectivesListProps) {
     const favouriteSet = new Set(favouriteIds);
@@ -67,6 +69,7 @@ export function ElectivesList({
                             onEdit={onEdit}
                             onArchive={onArchive}
                             onDelete={onDelete}
+                            onRestore={onRestore}
                         />
                     )}
                 </div>

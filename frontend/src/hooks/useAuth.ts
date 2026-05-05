@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { loginByEmail, mapAuthResponseToUser, mapStudentData } from '../api/auth';
 import { mapAdminElectivesToElectives } from '../utils/authElectives';
+import { sortAdminElectives } from '../utils/electivesList';
 import type {
     AuthResponse,
     AuthUser,
@@ -97,7 +98,7 @@ export function useAuth(): UseAuthResult {
             return [];
         }
 
-        return mapAdminElectivesToElectives(authResponse.all_electives);
+        return sortAdminElectives(mapAdminElectivesToElectives(authResponse.all_electives));
     }, [authResponse]);
 
     async function login(email: string) {
