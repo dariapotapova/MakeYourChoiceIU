@@ -18,7 +18,8 @@ export function createEmptyElectiveDraft(prefilledType = ''): ElectiveEditorDraf
         teacher: '',
         language: '',
         program: '',
-        year: '',
+        yearsOfStudy: [],
+        prerequisite: '',
         description: '',
     };
 }
@@ -32,9 +33,13 @@ export function mapElectiveToEditorDraft(elective: Elective): ElectiveEditorDraf
         electiveType: elective.electiveType,
         title: elective.name,
         teacher: elective.instructor,
-        language: elective.electiveLanguage,
-        program: elective.programLanguage,
-        year: elective.degreeYear[0] ?? '',
+        language: elective.programLanguage === 'RUS' ? 'RUS' : 'ENG',
+        program:
+            elective.programLanguage === 'ENG' || elective.programLanguage === 'RUS'
+                ? elective.programLanguage
+                : '',
+        yearsOfStudy: elective.degreeYear,
+        prerequisite: elective.prerequisite,
         description: elective.description,
     };
 }
@@ -48,11 +53,24 @@ export function isElectiveDraftComplete(draft: ElectiveEditorDraft): boolean {
         draft.electiveType.trim() !== '' &&
         draft.title.trim() !== '' &&
         draft.teacher.trim() !== '' &&
-        draft.language.trim() !== '' &&
-        draft.program.trim() !== '' &&
-        draft.year.trim() !== '' &&
+        draft.language !== '' &&
+        draft.program !== '' &&
+        draft.yearsOfStudy.length > 0 &&
         draft.description.trim() !== ''
     );
+}
+
+
+function mapEditorLanguageToApi(language: 'ENG' | 'RUS' | ''): string {
+    if (language === 'ENG') {
+        return 'english';
+    }
+
+    if (language === 'RUS') {
+        return 'russian';
+    }
+
+    return '';
 }
 
 /**
@@ -63,21 +81,20 @@ export function isElectiveDraftComplete(draft: ElectiveEditorDraft): boolean {
  * - бэк ждёт snake_case и свои имена полей
  */
 export function mapDraftToElectivePayload(
-    draft: ElectiveEditorDraft,
-    status: ElectiveMutationStatus
+    draft: ElectiveEditorDraft
 ): UpdateElectivePayload {
     return {
         name: draft.title.trim(),
         instructor: draft.teacher.trim(),
         description: draft.description.trim(),
-        elective_language: draft.language.trim(),
+        elective_language: mapEditorLanguageToApi(draft.language),
+        prerequisite: draft.prerequisite.trim(),
         elective_type: draft.electiveType.trim(),
-        program_language: draft.program.trim(),
-        degree_year: draft.year.trim() ? [draft.year.trim()] : [],
-        status,
+        program_language: draft.program,
+        degree_year: draft.yearsOfStudy,
+        status: 0,
     };
 }
-
 /**
  * Sidebar items -> options для select в редакторе.
  * Исключаем 'all', потому что это не реальный тип электива.

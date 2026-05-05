@@ -93,26 +93,8 @@ export function AdminElectivesPage({
         editor.openEdit(elective);
     }
 
-    async function handleSaveDraft() {
-        const payload = mapDraftToElectivePayload(editor.draft, 1);
-
-        try {
-            setSaving(true);
-
-            if (editor.mode === 'add') {
-                await onCreateElective(payload);
-            } else if (editor.editingElectiveId !== null) {
-                await onUpdateElective(editor.editingElectiveId, payload);
-            }
-
-            editor.close();
-        } finally {
-            setSaving(false);
-        }
-    }
-
-    async function handleSavePublished() {
-        const payload = mapDraftToElectivePayload(editor.draft, 0);
+    async function handleSave() {
+        const payload = mapDraftToElectivePayload(editor.draft);
 
         try {
             setSaving(true);
@@ -173,8 +155,7 @@ export function AdminElectivesPage({
                 typeOptions={typeOptions}
                 onClose={editor.close}
                 onChangeField={editor.updateField}
-                onSaveDraft={handleSaveDraft}
-                onSavePublished={handleSavePublished}
+                onSave={handleSave}
                 saving={saving}
                 locale={locale}
             />

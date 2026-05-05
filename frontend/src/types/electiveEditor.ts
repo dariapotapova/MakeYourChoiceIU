@@ -1,14 +1,17 @@
 import type { AdminSidebarItem } from './adminSidebar';
 
 export type ElectiveEditorMode = 'add' | 'edit';
+export type ElectiveEditorLanguage = 'ENG' | 'RUS' | '';
+
 
 export interface ElectiveEditorDraft {
     electiveType: string;
     title: string;
     teacher: string;
-    language: string;
-    program: string;
-    year: string;
+    language: ElectiveEditorLanguage;
+    program: '' | 'ENG' | 'RUS';
+    yearsOfStudy: string[];
+    prerequisite: string;
     description: string;
 }
 

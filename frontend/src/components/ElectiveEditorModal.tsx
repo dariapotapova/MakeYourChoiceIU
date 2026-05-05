@@ -18,8 +18,7 @@ interface ElectiveEditorModalProps {
         key: K,
         value: ElectiveEditorDraft[K]
     ) => void;
-    onSaveDraft: () => void;
-    onSavePublished: () => void;
+    onSave: () => void;
     saving?: boolean;
     locale: 'en' | 'ru';
 }
@@ -29,16 +28,16 @@ const TEXT = {
         addTitle: 'Add elective',
         editTitle: 'Edit elective',
         cancel: 'Cancel',
-        saveDraft: 'Save as draft',
         save: 'Save',
-        hint: 'Description supports Markdown (e.g., **bold**, _italic_, lists).',
+        hint: 'Description supports Markdown. Toolbar buttons insert basic formatting. TODO: improve paste handling from Word/Docs.',
         fields: {
             type: 'Type',
             title: 'Title',
             teacher: 'Teacher',
             language: 'Language',
             program: 'Program',
-            year: 'Year',
+            yearsOfStudy: 'Years of study',
+            prerequisite: 'Prerequisite',
             description: 'Description',
         },
     },
@@ -46,16 +45,16 @@ const TEXT = {
         addTitle: 'Добавить электив',
         editTitle: 'Редактировать электив',
         cancel: 'Отмена',
-        saveDraft: 'Сохранить как черновик',
         save: 'Сохранить',
-        hint: 'В описании можно использовать Markdown (например, **жирный**, _курсив_, списки).',
+        hint: 'Описание поддерживает Markdown. Кнопки панели вставляют базовое форматирование. TODO: улучшить вставку из Word/Docs.',
         fields: {
             type: 'Тип',
             title: 'Название',
             teacher: 'Преподаватель',
             language: 'Язык',
             program: 'Программа',
-            year: 'Курс',
+            yearsOfStudy: 'Годы обучения',
+            prerequisite: 'Пререквизиты',
             description: 'Описание',
         },
     },
@@ -68,8 +67,7 @@ export function ElectiveEditorModal({
                                         typeOptions,
                                         onClose,
                                         onChangeField,
-                                        onSaveDraft,
-                                        onSavePublished,
+                                        onSave,
                                         saving = false,
                                         locale,
                                     }: ElectiveEditorModalProps) {
@@ -94,16 +92,7 @@ export function ElectiveEditorModal({
 
                     <button
                         type="button"
-                        onClick={onSaveDraft}
-                        className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
-                        disabled={saving}
-                    >
-                        {text.saveDraft}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={onSavePublished}
+                        onClick={onSave}
                         className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantPrimary}`}
                         disabled={!isComplete || saving}
                     >

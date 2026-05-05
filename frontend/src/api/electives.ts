@@ -1,5 +1,5 @@
-//src/api/electives.ts
-import type {Elective, ElectiveDto} from "../types/elective.ts";
+import type { Elective, ElectiveDto } from '../types/elective';
+import { getCsrfToken } from '../utils/csrf';
 
 const API_BASE_URL = '/api/electives';
 
@@ -18,37 +18,33 @@ function mapElectiveDto(dto: ElectiveDto): Elective {
     };
 }
 
-async function handleResponse<T>(response: Response): Promise<T> {
+async function readErrorBody(response: Response): Promise<string> {
+    try {
+        const text = await response.text();
+        return text || `HTTP error: ${response.status}`;
+    } catch {
+        return `HTTP error: ${response.status}`;
+    }
+}
+
+async function handleJsonResponse<T>(response: Response): Promise<T> {
     if (!response.ok) {
-        throw new Error(response.statusText);
+        const errorBody = await readErrorBody(response);
+        console.error('API error body:', errorBody);
+        throw new Error(`HTTP error: ${response.status}`);
     }
 
-    return await response.json() as Promise<T>;
+    return response.json() as Promise<T>;
 }
 
-export async function getElectiveById(id: number): Promise<Elective> {
-    const response = await fetch(`${API_BASE_URL}/${id}/`, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-        }
-    });
+function buildJsonHeaders(includeContentType = false): HeadersInit {
+    const csrfToken = getCsrfToken();
 
-    const data = await handleResponse<ElectiveDto>(response);
-    return mapElectiveDto(data)
-
-}
-
-export async function getElectives(): Promise<Elective[]> {
-    const response = await fetch(`${API_BASE_URL}/`, {
-        method: "GET",
-        headers: {
-            Accept: "application/json",
-        }
-    });
-
-    const data = await handleResponse<ElectiveDto[]>(response);
-    return data.map(mapElectiveDto)
+    return {
+        Accept: 'application/json',
+        ...(includeContentType ? { 'Content-Type': 'application/json' } : {}),
+        ...(csrfToken ? { 'X-CSRFToken': csrfToken } : {}),
+    };
 }
 
 export interface UpdateElectivePayload {
@@ -56,74 +52,33 @@ export interface UpdateElectivePayload {
     instructor?: string;
     description?: string;
     elective_language?: string;
-    status?: Elective['status'];
+    status?: 0 | 1;
     prerequisite?: string;
     elective_type?: string;
     program_language?: string;
     degree_year?: string[];
 }
 
-/**
- * Обновить электив.
- * Обычно это PATCH, если меняем часть полей.
- */
-export async function updateElective(
-    id: number,
-    payload: UpdateElectivePayload
-): Promise<Elective> {
+export async function getElectiveById(id: number): Promise<Elective> {
     const response = await fetch(`${API_BASE_URL}/${id}/`, {
-        method: 'PATCH',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
+        method: 'GET',
+        credentials: 'include',
+        headers: buildJsonHeaders(false),
     });
-    console.log(JSON.stringify(payload));
 
-    return handleResponse<Elective>(response);
+    const data = await handleJsonResponse<ElectiveDto>(response);
+    return mapElectiveDto(data);
 }
 
-/**
- * Архивировать электив.
- *
- * Тут возможны 2 варианта:
- * 1. отдельный endpoint /archive/
- * 2. обычный PATCH status=1
- *
- * Ниже дан простой вариант через PATCH.
- * Если у вашего бэка другой endpoint, поменяешь только эту функцию.
- */
-export async function archiveElective(id: number): Promise<Elective> {
-    const response = await fetch(`${API_BASE_URL}/${id}/`, {
-        method: 'PATCH',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ status: 1 }),
+export async function getElectives(): Promise<Elective[]> {
+    const response = await fetch(`${API_BASE_URL}/`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: buildJsonHeaders(false),
     });
 
-    return handleResponse<Elective>(response);
-}
-
-/**
- * Удалить электив.
- *
- * Обычно DELETE возвращает либо пустой body,
- * либо 204 No Content.
- */
-export async function deleteElective(id: number): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/${id}/`, {
-        method: 'DELETE',
-        headers: {
-            Accept: 'application/json',
-        },
-    });
-
-    if (!response.ok) {
-        throw new Error(`HTTP error: ${response.status}`);
-    }
+    const data = await handleJsonResponse<ElectiveDto[]>(response);
+    return data.map(mapElectiveDto);
 }
 
 export async function createElective(
@@ -131,14 +86,55 @@ export async function createElective(
 ): Promise<void> {
     const response = await fetch(`${API_BASE_URL}/`, {
         method: 'POST',
-        headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-        },
+        credentials: 'include',
+        headers: buildJsonHeaders(true),
         body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
+        const errorBody = await readErrorBody(response);
+        console.error('createElective error body:', errorBody);
+        throw new Error(`HTTP error: ${response.status}`);
+    }
+}
+
+export async function updateElective(
+    id: number,
+    payload: UpdateElectivePayload
+): Promise<Elective> {
+    const response = await fetch(`${API_BASE_URL}/${id}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: buildJsonHeaders(true),
+        body: JSON.stringify(payload),
+    });
+
+    const data = await handleJsonResponse<ElectiveDto>(response);
+    return mapElectiveDto(data);
+}
+
+export async function archiveElective(id: number): Promise<Elective> {
+    const response = await fetch(`${API_BASE_URL}/${id}/`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: buildJsonHeaders(true),
+        body: JSON.stringify({ status: 1 }),
+    });
+
+    const data = await handleJsonResponse<ElectiveDto>(response);
+    return mapElectiveDto(data);
+}
+
+export async function deleteElective(id: number): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/${id}/`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: buildJsonHeaders(false),
+    });
+
+    if (!response.ok) {
+        const errorBody = await readErrorBody(response);
+        console.error('deleteElective error body:', errorBody);
         throw new Error(`HTTP error: ${response.status}`);
     }
 }

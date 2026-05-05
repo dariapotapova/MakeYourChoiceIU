@@ -15,10 +15,6 @@ async function handleResponse<T>(response: Response): Promise<T> {
     return response.json() as Promise<T>;
 }
 
-/**
- * Временный login по email.
- * Потом можно заменить на SSO flow, не трогая остальную архитектуру.
- */
 export async function loginByEmail(email: string): Promise<AuthResponse> {
     const encodedEmail = encodeURIComponent(email.trim());
 
@@ -32,10 +28,6 @@ export async function loginByEmail(email: string): Promise<AuthResponse> {
     return handleResponse<AuthResponse>(response);
 }
 
-/**
- * Пока group явно не приходит в response.
- * Временный нормализатор для верхнего UI.
- */
 export function mapAuthResponseToUser(response: AuthResponse): AuthUser {
     return {
         email: response.email,

@@ -1,9 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { loginByEmail, mapAuthResponseToUser, mapStudentData } from '../api/auth';
-import type { AuthResponse, AuthUser, NormalizedStudentData, UserRole } from '../types/auth';
+import { mapAdminElectivesToElectives } from '../utils/authElectives';
+import type {
+    AuthResponse,
+    AuthUser,
+    EffectiveMode,
+    NormalizedStudentData,
+} from '../types/auth';
 import type { Elective } from '../types/elective';
 
-type EffectiveMode = 'student' | 'admin';
+const STORAGE_KEY = 'myc-auth-session';
+
+interface StoredSession {
+    authResponse: AuthResponse | null;
+    effectiveMode: EffectiveMode | null;
+}
 
 interface UseAuthResult {
     authResponse: AuthResponse | null;
@@ -17,13 +28,57 @@ interface UseAuthResult {
     logout: () => void;
     switchToStudent: () => void;
     switchToAdmin: () => void;
+    setAdminElectives: (nextElectives: Elective[]) => void;
+    upsertAdminElective: (elective: Elective) => void;
+    removeAdminElective: (id: number) => void;
+}
+
+function readStoredSession(): StoredSession {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+
+        if (!raw) {
+            return {
+                authResponse: null,
+                effectiveMode: null,
+            };
+        }
+
+        return JSON.parse(raw) as StoredSession;
+    } catch {
+        return {
+            authResponse: null,
+            effectiveMode: null,
+        };
+    }
+}
+
+function writeStoredSession(session: StoredSession) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+}
+
+function clearStoredSession() {
+    localStorage.removeItem(STORAGE_KEY);
 }
 
 export function useAuth(): UseAuthResult {
-    const [authResponse, setAuthResponse] = useState<AuthResponse | null>(null);
-    const [effectiveMode, setEffectiveMode] = useState<EffectiveMode | null>(null);
+    const stored = readStoredSession();
+
+    const [authResponse, setAuthResponse] = useState<AuthResponse | null>(
+        stored.authResponse
+    );
+    const [effectiveMode, setEffectiveMode] = useState<EffectiveMode | null>(
+        stored.effectiveMode
+    );
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    useEffect(() => {
+        writeStoredSession({
+            authResponse,
+            effectiveMode,
+        });
+    }, [authResponse, effectiveMode]);
 
     const user = useMemo(() => {
         return authResponse ? mapAuthResponseToUser(authResponse) : null;
@@ -42,7 +97,7 @@ export function useAuth(): UseAuthResult {
             return [];
         }
 
-        return authResponse.all_electives;
+        return mapAdminElectivesToElectives(authResponse.all_electives as any[]);
     }, [authResponse]);
 
     async function login(email: string) {
@@ -71,6 +126,7 @@ export function useAuth(): UseAuthResult {
         setAuthResponse(null);
         setEffectiveMode(null);
         setError(null);
+        clearStoredSession();
     }
 
     function switchToStudent() {
@@ -93,6 +149,51 @@ export function useAuth(): UseAuthResult {
         }
     }
 
+    function setAdminElectives(nextElectives: Elective[]) {
+        setAuthResponse((prev) => {
+            if (!prev || prev.role === 'student') {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                all_electives: nextElectives,
+            };
+        });
+    }
+
+    function upsertAdminElective(elective: Elective) {
+        setAuthResponse((prev) => {
+            if (!prev || prev.role === 'student') {
+                return prev;
+            }
+
+            const exists = prev.all_electives.some((item) => item.id === elective.id);
+
+            return {
+                ...prev,
+                all_electives: exists
+                    ? prev.all_electives.map((item) =>
+                        item.id === elective.id ? elective : item
+                    )
+                    : [elective, ...prev.all_electives],
+            };
+        });
+    }
+
+    function removeAdminElective(id: number) {
+        setAuthResponse((prev) => {
+            if (!prev || prev.role === 'student') {
+                return prev;
+            }
+
+            return {
+                ...prev,
+                all_electives: prev.all_electives.filter((item) => item.id !== id),
+            };
+        });
+    }
+
     return {
         authResponse,
         user,
@@ -105,5 +206,8 @@ export function useAuth(): UseAuthResult {
         logout,
         switchToStudent,
         switchToAdmin,
+        setAdminElectives,
+        upsertAdminElective,
+        removeAdminElective,
     };
 }

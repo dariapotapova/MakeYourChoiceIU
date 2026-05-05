@@ -40,7 +40,7 @@ export function AdminElectiveFilters({
                 >
                     <option value="">All</option>
                     {filterOptions.electiveLanguages.map((value) => (
-                        <option key={value} value={value}>
+                        <option key={`language-${value}`} value={value}>
                             {value}
                         </option>
                     ))}
@@ -55,7 +55,7 @@ export function AdminElectiveFilters({
                 >
                     <option value="">All</option>
                     {filterOptions.degreeYears.map((value) => (
-                        <option key={value} value={value}>
+                        <option key={`degree-${value}`} value={value}>
                             {value}
                         </option>
                     ))}
@@ -70,7 +70,7 @@ export function AdminElectiveFilters({
                 >
                     <option value="">All</option>
                     {filterOptions.electiveTypes.map((value) => (
-                        <option key={value} value={value}>
+                        <option key={`type-${value}`} value={value}>
                             {value}
                         </option>
                     ))}
@@ -85,7 +85,7 @@ export function AdminElectiveFilters({
                 >
                     <option value="">All</option>
                     {filterOptions.programLanguages.map((value) => (
-                        <option key={value} value={value}>
+                        <option key={`program-${value}`} value={value}>
                             {value}
                         </option>
                     ))}
@@ -100,7 +100,7 @@ export function AdminElectiveFilters({
                 >
                     <option value="">All</option>
                     {filterOptions.statuses.map((value) => (
-                        <option key={value} value={value}>
+                        <option key={`status-${value}`} value={value}>
                             {value}
                         </option>
                     ))}

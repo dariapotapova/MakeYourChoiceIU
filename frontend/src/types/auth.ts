@@ -2,26 +2,42 @@ import type { Elective } from './elective';
 import type { StudentProfileElectiveType } from './studentSidebar';
 
 export type UserRole = 'student' | 'admin' | 'admin-student';
+export type EffectiveMode = 'student' | 'admin';
+
+export interface StudentAvailableElectiveResponse {
+    id: number;
+    name: string;
+    instructor: string;
+    description: string;
+    elective_language: string;
+    prerequisite: string;
+}
 
 export interface StudentAvailableElectiveGroupResponse {
     elective_type: string;
     priorities: number;
-    electives: Array<{
-        id: number;
-        name: string;
-        instructor: string;
-        description: string;
-        elective_language: string;
-        prerequisite: string;
-    }>;
+    electives: StudentAvailableElectiveResponse[];
+}
+
+export interface StudentChosenElectiveResponse {
+    priority: number;
+    elective: StudentAvailableElectiveResponse;
+}
+
+export interface StudentChosenElectiveGroupResponse {
+    elective_type: string;
+    electives: StudentChosenElectiveResponse[];
 }
 
 export interface StudentDataResponse {
+    iteration_id: number;
     deadline: string;
     available_electives: StudentAvailableElectiveGroupResponse[];
+    chosen_electives: StudentChosenElectiveGroupResponse[];
 }
 
 export interface StudentAuthResponse {
+    student_id: number;
     role: 'student';
     email: string;
     student_data: StudentDataResponse;
@@ -45,10 +61,6 @@ export type AuthResponse =
     | AdminAuthResponse
     | AdminStudentAuthResponse;
 
-/**
- * Нормализованный auth user для UI.
- * Group пока у бэка явно не приходит, поэтому временно делаем nullable.
- */
 export interface AuthUser {
     email: string;
     role: UserRole;

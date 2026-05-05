@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { Elective } from '../types/elective';
 import { ElectiveCardBase } from './ElectiveCardBase';
 import { ElectiveModal } from './ElectiveModal';
@@ -7,6 +8,11 @@ import { useElectiveSearch } from '../hooks/useElectiveSearch';
 import { ELECTIVE_TEXT, type Locale } from '../utils/electiveText';
 import { highlight } from '../utils/electiveSearch';
 import buttonStyles from '../styles/button.module.css';
+import ReactMarkdown from 'react-markdown';
+
+const MarkdownRenderer = ReactMarkdown as unknown as React.ComponentType<{
+    children: string;
+}>;
 
 interface StudentElectiveCardProps {
     elective: Elective;
@@ -31,13 +37,26 @@ export function StudentElectiveCard({
         query
     );
 
-    const descriptionPreview =
+    const previewLimit = 240;
+
+    /**
+     * Базовый текст превью.
+     * Это именно текстовый источник, без JSX и без markdown-render.
+     */
+    const descriptionPreviewText =
         longOnly && snippet
-            ? highlight(snippet, normalizedQuery)
-            : highlight(
-                elective.description.length > 240 ? `${previewRaw}…` : previewRaw,
-                normalizedQuery
-            );
+            ? snippet
+            : elective.description.length > previewLimit
+                ? `${previewRaw}…`
+                : previewRaw;
+
+    /**
+     * Отдельно готовим highlighted-версию для режима поиска.
+     */
+    const descriptionPreviewHighlighted = highlight(
+        descriptionPreviewText,
+        normalizedQuery
+    );
 
     return (
         <>
@@ -57,7 +76,13 @@ export function StudentElectiveCard({
                 }
                 descriptionContent={
                     <div>
-                        <p>{descriptionPreview}</p>
+                        {normalizedQuery ? (
+                            <p>{descriptionPreviewHighlighted}</p>
+                        ) : (
+                            <div>
+                                <MarkdownRenderer>{descriptionPreviewText}</MarkdownRenderer>
+                            </div>
+                        )}
 
                         {longOnly ? (
                             <div>{text.hints.matchInFullDescription}</div>
@@ -98,7 +123,10 @@ export function StudentElectiveCard({
                     <p>
                         {text.meta.prerequisite}: {highlight(elective.prerequisite, normalizedQuery)}
                     </p>
-                    <div>{highlight(elective.description, normalizedQuery)}</div>
+
+                    <div>
+                        <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                    </div>
                 </div>
             </ElectiveModal>
         </>

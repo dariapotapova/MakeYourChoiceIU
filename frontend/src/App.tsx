@@ -4,8 +4,12 @@ import { useAuth } from './hooks/useAuth';
 import { StudentElectivesPage } from './pages/StudentElectivesPage';
 import { AdminElectivesPage } from './pages/AdminElectivesPage';
 import { AppShell } from './components/AppShell';
-import { useElectives } from './hooks/useElectives';
-import { createElective, archiveElective, deleteElective, updateElective } from './api/electives';
+import {
+    createElective,
+    archiveElective,
+    deleteElective,
+    updateElective,
+} from './api/electives';
 import type { Elective } from './types/elective';
 import type { UpdateElectivePayload } from './api/electives';
 import { mapStudentDataToElectives } from './utils/authElectives';
@@ -17,14 +21,6 @@ function App() {
     const [query, setQuery] = useState('');
     const [actionError, setActionError] = useState<string | null>(null);
     const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
-
-    /**
-     * admin catalogue всё ещё удобно refetch-ить отдельным хуком,
-     * потому что add/edit/archive/delete работают по общему каталогу.
-     *
-     * Для student mode этот каталог не используем.
-     */
-    const adminCatalogue = useElectives();
 
     const studentElectives = useMemo(() => {
         if (!auth.authResponse) {
@@ -45,13 +41,34 @@ function App() {
         });
     }
 
+    function handleLogout() {
+        auth.logout();
+        setQuery('');
+        setFavouriteIds([]);
+        setActionError(null);
+        setActionLoadingId(null);
+    }
+
     async function handleCreateElective(payload: UpdateElectivePayload) {
         try {
             setActionError(null);
             setActionLoadingId(-1);
 
             await createElective(payload);
-            await adminCatalogue.refetch();
+
+            /**
+             * Пока сервер create endpoint возвращает не объект электива, а только success/error,
+             * не можем корректно локально upsert-нуть новый элемент по данным ответа.
+             *
+             * Поэтому после create лучше сделать повторный login,
+             * чтобы заново получить актуальный all_electives.
+             *
+             * Если позже backend начнёт возвращать созданный elective object,
+             * можно будет заменить это на auth.upsertAdminElective(...)
+             */
+            if (auth.user?.email) {
+                await auth.login(auth.user.email);
+            }
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Failed to create elective');
         } finally {
@@ -65,7 +82,15 @@ function App() {
             setActionLoadingId(id);
 
             await updateElective(id, payload);
-            await adminCatalogue.refetch();
+
+            /**
+             * PATCH по вашему контракту тоже возвращает только success/error,
+             * а не полный updated elective.
+             * Поэтому безопаснее заново refresh-нуть session через login.
+             */
+            if (auth.user?.email) {
+                await auth.login(auth.user.email);
+            }
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Failed to update elective');
         } finally {
@@ -79,7 +104,10 @@ function App() {
             setActionLoadingId(elective.id);
 
             await archiveElective(elective.id);
-            await adminCatalogue.refetch();
+
+            if (auth.user?.email) {
+                await auth.login(auth.user.email);
+            }
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Failed to archive elective');
         } finally {
@@ -101,7 +129,8 @@ function App() {
             setActionLoadingId(elective.id);
 
             await deleteElective(elective.id);
-            await adminCatalogue.refetch();
+
+            auth.removeAdminElective(elective.id);
         } catch (err) {
             setActionError(err instanceof Error ? err.message : 'Failed to delete elective');
         } finally {
@@ -127,7 +156,7 @@ function App() {
             user={auth.user}
             searchValue={query}
             onSearchChange={setQuery}
-            onLogout={auth.logout}
+            onLogout={handleLogout}
             onSwitchToStudent={auth.user.role === 'admin-student' ? auth.switchToStudent : undefined}
         >
             {actionError ? <p>Action failed: {actionError}</p> : null}
@@ -145,26 +174,15 @@ function App() {
             ) : null}
 
             {isAdminMode ? (
-                adminCatalogue.loading ? (
-                    <div>Loading admin electives...</div>
-                ) : adminCatalogue.error ? (
-                    <div>
-                        <p>Failed to load admin electives: {adminCatalogue.error}</p>
-                        <button type="button" onClick={adminCatalogue.refetch}>
-                            Retry
-                        </button>
-                    </div>
-                ) : (
-                    <AdminElectivesPage
-                        electives={adminCatalogue.electives}
-                        locale="en"
-                        query={query}
-                        onCreateElective={handleCreateElective}
-                        onUpdateElective={handleUpdateElective}
-                        onArchive={handleArchive}
-                        onDelete={handleDelete}
-                    />
-                )
+                <AdminElectivesPage
+                    electives={auth.adminElectives}
+                    locale="en"
+                    query={query}
+                    onCreateElective={handleCreateElective}
+                    onUpdateElective={handleUpdateElective}
+                    onArchive={handleArchive}
+                    onDelete={handleDelete}
+                />
             ) : null}
         </AppShell>
     );

@@ -1,3 +1,4 @@
+import * as React from 'react';
 import type { Elective } from '../types/elective';
 import { ElectiveCardBase } from './ElectiveCardBase';
 import { ElectiveModal } from './ElectiveModal';
@@ -7,6 +8,11 @@ import { useElectiveSearch } from '../hooks/useElectiveSearch';
 import { ELECTIVE_TEXT, type Locale } from '../utils/electiveText';
 import { highlight } from '../utils/electiveSearch';
 import buttonStyles from '../styles/button.module.css';
+import ReactMarkdown from 'react-markdown';
+
+const MarkdownRenderer = ReactMarkdown as unknown as React.ComponentType<{
+    children: string;
+}>;
 
 interface AdminElectiveCardProps {
     elective: Elective;
@@ -33,13 +39,25 @@ export function AdminElectiveCard({
         query
     );
 
-    const descriptionPreview =
+    const previewLimit = 240;
+
+    /**
+     * Базовый текст превью.
+     */
+    const descriptionPreviewText =
         longOnly && snippet
-            ? highlight(snippet, normalizedQuery)
-            : highlight(
-                elective.description.length > 240 ? `${previewRaw}…` : previewRaw,
-                normalizedQuery
-            );
+            ? snippet
+            : elective.description.length > previewLimit
+                ? `${previewRaw}…`
+                : previewRaw;
+
+    /**
+     * Highlighted-версия только для режима поиска.
+     */
+    const descriptionPreviewHighlighted = highlight(
+        descriptionPreviewText,
+        normalizedQuery
+    );
 
     return (
         <>
@@ -63,7 +81,13 @@ export function AdminElectiveCard({
                 }
                 descriptionContent={
                     <div>
-                        <p>{descriptionPreview}</p>
+                        {normalizedQuery ? (
+                            <p>{descriptionPreviewHighlighted}</p>
+                        ) : (
+                            <div>
+                                <MarkdownRenderer>{descriptionPreviewText}</MarkdownRenderer>
+                            </div>
+                        )}
 
                         {longOnly ? (
                             <div>{text.hints.matchInFullDescription}</div>
@@ -73,17 +97,16 @@ export function AdminElectiveCard({
                 extraInfo={
                     <div>
                         <p>
-                            {text.meta.status}: {highlight(String(elective.status), normalizedQuery)}
+                            {text.meta.status}: {String(elective.status)}
                         </p>
                         <p>
-                            {text.meta.type}: {highlight(elective.electiveType, normalizedQuery)}
+                            {text.meta.type}: {elective.electiveType}
                         </p>
                         <p>
-                            {text.meta.program}: {highlight(elective.programLanguage, normalizedQuery)}
+                            {text.meta.program}: {elective.programLanguage}
                         </p>
                         <p>
-                            {text.meta.degreeYears}:{' '}
-                            {highlight(elective.degreeYear.join(', '), normalizedQuery)}
+                            {text.meta.degreeYears}: {(elective.degreeYear ?? []).join(', ')}
                         </p>
                     </div>
                 }
@@ -103,13 +126,10 @@ export function AdminElectiveCard({
                 title={elective.name}
                 onClose={close}
                 footer={
-                    <div>
+                    <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                         <button
                             type="button"
-                            onClick={() => {
-                                close();
-                                onEdit?.(elective);
-                            }}
+                            onClick={() => onEdit?.(elective)}
                             className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
                         >
                             {text.actions.edit}
@@ -117,10 +137,7 @@ export function AdminElectiveCard({
 
                         <button
                             type="button"
-                            onClick={() => {
-                                close();
-                                onArchive?.(elective);
-                            }}
+                            onClick={() => onArchive?.(elective)}
                             className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
                         >
                             {text.actions.archive}
@@ -128,10 +145,7 @@ export function AdminElectiveCard({
 
                         <button
                             type="button"
-                            onClick={() => {
-                                close();
-                                onDelete?.(elective);
-                            }}
+                            onClick={() => onDelete?.(elective)}
                             className={`${buttonStyles.button} ${buttonStyles.sizeMd} ${buttonStyles.variantGhost}`}
                         >
                             {text.actions.delete}
@@ -150,20 +164,21 @@ export function AdminElectiveCard({
                         {text.meta.prerequisite}: {highlight(elective.prerequisite, normalizedQuery)}
                     </p>
                     <p>
-                        {text.meta.status}: {highlight(String(elective.status), normalizedQuery)}
+                        {text.meta.status}: {String(elective.status)}
                     </p>
                     <p>
-                        {text.meta.type}: {highlight(elective.electiveType, normalizedQuery)}
+                        {text.meta.type}: {elective.electiveType}
                     </p>
                     <p>
-                        {text.meta.program}: {highlight(elective.programLanguage, normalizedQuery)}
+                        {text.meta.program}: {elective.programLanguage}
                     </p>
                     <p>
-                        {text.meta.degreeYears}:{' '}
-                        {highlight(elective.degreeYear.join(', '), normalizedQuery)}
+                        {text.meta.degreeYears}: {elective.degreeYear.join(', ')}
                     </p>
 
-                    <div>{highlight(elective.description, normalizedQuery)}</div>
+                    <div>
+                        <MarkdownRenderer>{elective.description}</MarkdownRenderer>
+                    </div>
                 </div>
             </ElectiveModal>
         </>
