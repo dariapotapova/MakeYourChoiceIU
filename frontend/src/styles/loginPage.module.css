@@ -37,3 +37,9 @@
     width: 100%;
     justify-content: center;
 }
+
+.hint {
+    margin: 14px 0 0;
+    font-size: 0.85rem;
+    color: #5f5f5f;
+}

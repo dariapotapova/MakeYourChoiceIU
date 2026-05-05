@@ -3,6 +3,7 @@ import type { AuthResponse } from '../types/auth';
 import type { Elective } from '../types/elective';
 import { mapStudentDataToElectives } from '../utils/authElectives';
 import { submitStudentElectives } from '../api/studentVoting';
+import { MOCK_STUDENT_EMAIL } from '../mocks/studentAuthMock';
 
 interface StudentElectiveTypeGroup {
     type: string;
@@ -85,6 +86,7 @@ export function useStudentElectivesFlow({
     const [submittedByType, setSubmittedByType] = useState<Record<string, number[]>>({});
     const [savingType, setSavingType] = useState<string | null>(null);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const isMockStudentMode = authResponse?.role === 'student' && authResponse.email === MOCK_STUDENT_EMAIL;
 
     const studentElectives = useMemo(() => {
         if (!authResponse || authResponse.role === 'admin') {
@@ -235,15 +237,19 @@ export function useStudentElectivesFlow({
             setSaveError(null);
 
             try {
-                await submitStudentElectives({
-                    student_id: studentId,
-                    iteration_id: iterationId,
-                    elective_type: type,
-                    electives: valid.map((electiveId, index) => ({
-                        priority: index + 1,
-                        elective_id: electiveId,
-                    })),
-                });
+                if (isMockStudentMode) {
+                    await new Promise((resolve) => setTimeout(resolve, 250));
+                } else {
+                    await submitStudentElectives({
+                        student_id: studentId,
+                        iteration_id: iterationId,
+                        elective_type: type,
+                        electives: valid.map((electiveId, index) => ({
+                            priority: index + 1,
+                            elective_id: electiveId,
+                        })),
+                    });
+                }
                 setSubmittedByType((prev) => ({
                     ...prev,
                     [type]: valid,
@@ -255,7 +261,7 @@ export function useStudentElectivesFlow({
                 setSavingType(null);
             }
         },
-        [getSelections, iterationId, studentId]
+        [getSelections, isMockStudentMode, iterationId, studentId]
     );
 
     const resetStudentState = useCallback(() => {

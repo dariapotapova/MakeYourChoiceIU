@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { loginByEmail, mapAuthResponseToUser, mapStudentData } from '../api/auth';
 import { mapAdminElectivesToElectives } from '../utils/authElectives';
 import { sortAdminElectives } from '../utils/electivesList';
+import { mockStudentAuthResponse, MOCK_STUDENT_EMAIL } from '../mocks/studentAuthMock';
 import type {
     AuthResponse,
     AuthUser,
@@ -105,6 +106,12 @@ export function useAuth(): UseAuthResult {
         try {
             setLoading(true);
             setError(null);
+
+            if (email.trim().toLowerCase() === MOCK_STUDENT_EMAIL) {
+                setAuthResponse(mockStudentAuthResponse);
+                setEffectiveMode('student');
+                return;
+            }
 
             const response = await loginByEmail(email);
             setAuthResponse(response);

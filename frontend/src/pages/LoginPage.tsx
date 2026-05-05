@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import buttonStyles from '../styles/button.module.css';
 import styles from '../styles/loginPage.module.css';
+import { MOCK_STUDENT_EMAIL } from '../mocks/studentAuthMock';
 
 interface LoginPageProps {
     loading: boolean;
@@ -53,6 +54,10 @@ export function LoginPage({
                         {loading ? 'Loading...' : 'Log in'}
                     </button>
                 </form>
+
+                <p className={styles.hint}>
+                    Student UI mock: <code>{MOCK_STUDENT_EMAIL}</code>
+                </p>
             </div>
         </main>
     );

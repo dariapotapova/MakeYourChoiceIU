@@ -13,6 +13,8 @@ import {
 } from '../components/StudentElectiveSelectionForm';
 import type { StudentSelectionByTypeHandle } from '../types/studentVoting';
 import type { StudentChosenGroup } from '../hooks/useStudentElectivesFlow';
+import { UiAlert } from '../components/UiAlert';
+import styles from './StudentElectivesPage.module.css';
 
 interface StudentElectivesPageProps {
     electives: Elective[];
@@ -145,17 +147,20 @@ export function StudentElectivesPage({
 
         if (activeSection.kind === 'main') {
             return (
-                <section>
-                    <h1>Main</h1>
+                <section className={styles.contentSection}>
                     {chosenSummary.length === 0 ? (
-                        <p>No submission yet. Choose an elective type and save your priorities.</p>
+                        <div className={styles.mainCard}>
+                            <p className={styles.emptyHint}>
+                                No submission yet. Choose an elective type and save your priorities.
+                            </p>
+                        </div>
                     ) : (
-                        <div>
-                            <p>Your latest submitted choices:</p>
+                        <div className={styles.mainCard}>
+                            <p className={styles.mainLead}>Your latest submitted choices:</p>
                             {chosenSummary.map((group) => (
-                                <section key={`chosen-${group.type}`}>
-                                    <h3>{group.type}</h3>
-                                    <ol>
+                                <section key={`chosen-${group.type}`} className={styles.typeBlock}>
+                                    <h3 className={styles.typeTitle}>{group.type}</h3>
+                                    <ol className={styles.chosenList}>
                                         {group.electiveIds.map((electiveId, index) => {
                                             const matched = electives.find(
                                                 (item) => item.id === electiveId
@@ -176,9 +181,7 @@ export function StudentElectivesPage({
         }
 
         return (
-            <section>
-                <h1>{activeSection.label}</h1>
-
+            <section className={styles.contentSection}>
                 <ElectivesList
                     role="student"
                     electives={filteredElectives}
@@ -246,7 +249,7 @@ export function StudentElectivesPage({
                                         );
                                     }}
                                 />
-                                {saveError ? <p>{saveError}</p> : null}
+                                {saveError ? <UiAlert message={saveError} /> : null}
                             </>
                         ) : null
                     }
