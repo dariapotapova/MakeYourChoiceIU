@@ -42,9 +42,7 @@ class SuggestionListView(APIView):
                 return Response({'status': 'error', 'message': 'Invalid status value'}, status=400)
             queryset = queryset.filter(status=status_filter)
 
-        serializer = SuggestionSerializer(
-            queryset, many=True, context={'request': request, 'is_admin': True}
-        )
+        serializer = SuggestionSerializer(queryset, many=True)
         return Response(serializer.data)
 
 
@@ -104,14 +102,25 @@ class SuggestionRejectView(APIView):
         suggestion.status = 'rejected'
         suggestion.save()
 
+        return Response({'status': 'success', 'message': 'Suggestion rejected'})
+
+
+class SuggestionEditLinkView(APIView):
+
+    def get(self, request, pk):
+        """GET /suggestions/{id}/edit-link — return the edit link for a suggestion (admin only)."""
+        if not get_admin(request):
+            return Response({'status': 'error', 'message': 'Forbidden'}, status=403)
+
+        try:
+            suggestion = Suggestion.objects.get(pk=pk)
+        except Suggestion.DoesNotExist:
+            return Response({'status': 'error', 'message': 'Suggestion not found'}, status=404)
+
         frontend_base = 'http://localhost:3000'  # TODO: move to settings
         edit_link = f'{frontend_base}/suggestions/edit/{suggestion.edit_token}'
 
-        return Response({
-            'status': 'success',
-            'message': 'Suggestion rejected',
-            'edit_link': edit_link,
-        })
+        return Response({'edit_link': edit_link})
 
 
 class SuggestionEditView(APIView):
