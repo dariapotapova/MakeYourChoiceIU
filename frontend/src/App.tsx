@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import ThemeToggle from '@/shared/components/ThemeToggle';
-import LanguageSwitcher from './shared/components/LanguageSwitcher';
+import LanguageToggle from '@/shared/components/LanguageToggle';
 
 // Placeholder pages using translations
 const HomePage = () => {
@@ -44,7 +44,7 @@ function App() {
             <Link to="/login">{t('nav.login', 'Login')}</Link>
           </div>
           <div className="flex items-center gap-4">
-            <LanguageSwitcher />
+            <LanguageToggle />
             <ThemeToggle />
           </div>
           {/*<div className="bg-gray-100 dark:bg-gray-900 text-black dark:text-white">*/}

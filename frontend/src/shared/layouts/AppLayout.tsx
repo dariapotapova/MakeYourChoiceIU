@@ -1,4 +1,4 @@
-import LanguageSwitcher from '../components/LanguageSwitcher';
+import LanguageSwitcher from '../components/LanguageToggle';
 
 export const AppLayout = ({ children }) => (
   <div>
