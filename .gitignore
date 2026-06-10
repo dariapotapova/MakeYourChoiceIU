@@ -21,6 +21,7 @@ build/
 .idea/
 *.swp
 *.swo
+.claude
 
 
 secrets.yml
