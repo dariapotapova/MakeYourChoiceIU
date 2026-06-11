@@ -5,3 +5,5 @@
 @theme {
   --color-green-iu: #40BB20;
 }
+
+@plugin "@tailwindcss/typography";

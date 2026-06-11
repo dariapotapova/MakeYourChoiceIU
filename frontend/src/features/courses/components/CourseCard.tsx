@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { MarkdownRenderer } from '@/shared/components/MarkdownRenderer';
 
 interface CourseProps {
   id: string;
@@ -71,22 +72,15 @@ export const CourseCard = ({
         </div>
       </div>
 
-      <div className="pr-16">
-        <p
-          className={`
-            font-medium text-gray-500 dark:text-gray-300 text-base
-            whitespace-pre-wrap
-            transition-all duration-200
-            ${isExpanded ? '' : 'overflow-hidden'}
-          `}
-          style={
-            isExpanded
-              ? { whiteSpace: 'pre-wrap' }
-              : { maxHeight: '1.5rem', overflow: 'hidden' }
-          }
+      <div className="pr-26">
+        <div
+          className={`font-medium text-gray-500 dark:text-gray-300 text-base transition-all duration-200 ${
+            isExpanded ? '' : 'overflow-hidden'
+          }`}
+          style={isExpanded ? undefined : { maxHeight: '3rem', overflow: 'hidden' }}
         >
-          {description}
-        </p>
+          <MarkdownRenderer content={description} />
+        </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="absolute bottom-4 right-4 font-bold bg-green-iu hover:bg-green-iu text-white py-1 px-2 rounded text-base transition-colors shrink-0 whitespace-nowrap"
