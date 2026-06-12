@@ -72,7 +72,7 @@ export const CourseCard = ({
         </div>
       </div>
 
-      <div className="pr-26">
+      <div className="pr-28">
         <div
           className={`font-medium text-gray-500 dark:text-gray-300 text-base transition-all duration-200 ${
             isExpanded ? '' : 'overflow-hidden'
