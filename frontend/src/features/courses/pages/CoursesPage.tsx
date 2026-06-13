@@ -3,11 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { CourseCard } from '@/features/courses/components/CourseCard';
 import { Sidebar } from '@/shared/layouts/Sidebar';
 import { mockCourses } from '@/shared/lib/mockApi';
+import { useFavorites } from "@/features/courses/hooks/useFavourites";
 
 const CoursesPage = () => {
   const { t } = useTranslation();
   const [courses, setCourses] = useState(mockCourses);
   const [deadline, setDeadline] = useState('August 28, 23:59');
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   // 1. Fetch Data from backend here
   useEffect(() => {
@@ -29,10 +31,10 @@ const CoursesPage = () => {
       <div className="flex-1 p-3 max-w-5xl">
         {/* Top Toolbar */}
         <div className="flex justify-end gap-4 mb-6">
-          <button className="bg-green-iu p-2 rounded text-white hover:bg-green-iu transition-colors">
+          <button className="bg-green-iu hover:bg-hover-green-iu dark:bg-green-iu dark:hover:hover:bg-dark-hover-green-iu p-2 rounded text-white transition-colors">
             <SearchIcon />
           </button>
-          <button className="bg-green-iu p-2 rounded text-white hover:bg-green-iu transition-colors">
+          <button className="bg-green-iu hover:bg-hover-green-iu dark:bg-green-iu dark:hover:hover:bg-dark-hover-green-iu p-2 rounded text-white transition-colors">
             <FilterIcon />
           </button>
         </div>
@@ -43,7 +45,8 @@ const CoursesPage = () => {
             <CourseCard
               key={course.id}
               {...course}
-              onToggleFavorite={handleToggleFavorite}
+              isFavorite={isFavorite(course.id)}
+              onToggleFavorite={toggleFavorite}
             />
           ))}
         </div>

@@ -4,6 +4,8 @@
 
 @theme {
   --color-green-iu: #40BB20;
+  --color-hover-green-iu: #2E8A16;
+  --color-dark-hover-green-iu: #65D640;
 }
 
 @plugin "@tailwindcss/typography";

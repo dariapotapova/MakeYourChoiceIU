@@ -11,8 +11,8 @@ export const Sidebar = ({ deadline }: { deadline: string }) => {
       <hr className="border-t-2 border-green-iu -mx-5" />
       <nav className="space-y-3 text-bold font-medium">
         <div className="font-bold text-gray-800 dark:text-gray-200">{t('nav.main_menu')}</div>
-        <div className="font-bold text-green-iu cursor-pointer">{t('nav.humanitarian')}</div>
-        <div className="font-bold text-green-iu cursor-pointer">{t('nav.technical')}</div>
+        <div className="font-bold text-green-iu hover:text-hover-green-iu dark:text-green-iu dark:hover:hover:text-dark-hover-green-iu cursor-pointer">{t('nav.humanitarian')}</div>
+        <div className="font-bold text-green-iu hover:text-hover-green-iu dark:text-green-iu dark:hover:hover:text-dark-hover-green-iu cursor-pointer">{t('nav.technical')}</div>
       </nav>
 
 
@@ -37,7 +37,7 @@ export const Sidebar = ({ deadline }: { deadline: string }) => {
           ))}
         </div>
         <div className="flex items-center gap-2 mt-4">
-          <button className="bg-green-iu hover:bg-green-iu text-white font-bold py-1.5 px-4 rounded text-sm flex-1 shadow-md">
+          <button className="bg-green-iu hover:bg-hover-green-iu dark:bg-green-iu dark:hover:hover:bg-dark-hover-green-iu text-white font-bold py-1.5 px-4 rounded text-sm flex-1 shadow-md">
             {t('sidebar.submit')}
           </button>
           <button className="bg-gray-400 hover:bg-gray-500 text-white p-1.5 rounded-full">

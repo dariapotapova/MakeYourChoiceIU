@@ -1,5 +1,3 @@
-// src/shared/lib/mockApi.ts
-
 export interface Course {
   id: string;
   title: string;
@@ -7,9 +5,6 @@ export interface Course {
   format: 'offline' | 'online';
   instructor: string;
   description: string;
-  credits: number;
-  totalSeats: number;
-  enrolled: number;   // how many students already enrolled
 }
 
 // Mock courses data
@@ -29,9 +24,6 @@ export const mockCourses: Course[] = [
       'Bluetooth\n' +
       'Wi-Fi\n' +
       'Embedded Systems\n',
-    credits: 4,
-    totalSeats: 40,
-    enrolled: 25,
   },
   {
     id: '2',
@@ -40,9 +32,6 @@ export const mockCourses: Course[] = [
     format: 'offline',
     instructor: 'Nikolay Kudasov',
     description: 'The main purpose of this course is to present purely functional programming with a strong static type system and discuss its benefits for structuring...',
-    credits: 3,
-    totalSeats: 30,
-    enrolled: 12,
   },
   {
     id: '3',
@@ -51,9 +40,6 @@ export const mockCourses: Course[] = [
     format: 'offline',
     instructor: 'Munir Makhmutov',
     description: 'The target audience of this course are students interested in music generation...',
-    credits: 2,
-    totalSeats: 25,
-    enrolled: 8,
   },
   {
     id: '4',
@@ -88,9 +74,6 @@ export const mockCourses: Course[] = [
       '\n' +
       '\n' +
       'Course duration: 8 lectures and 8 practices.\n',
-    credits: 4,
-    totalSeats: 40,
-    enrolled: 25,
   },
   {
     id: '5',
@@ -343,9 +326,6 @@ export const mockCourses: Course[] = [
       '::: warning\n' +
       '*here be dragons*\n' +
       ':::\n',
-    credits: 4,
-    totalSeats: 40,
-    enrolled: 25,
   },
 ];
 
@@ -362,35 +342,6 @@ export const fetchCourses = async (): Promise<Course[]> => {
 export const fetchCourseById = async (id: string): Promise<Course | undefined> => {
   await delay(300);
   return mockCourses.find(c => c.id === id);
-};
-
-// Enroll in a course (decrease available seats, increment enrolled)
-export const enrollInCourse = async (courseId: string): Promise<{ success: boolean; message: string; updatedCourse?: Course }> => {
-  await delay(500);
-  const course = mockCourses.find(c => c.id === courseId);
-  if (!course) {
-    return { success: false, message: 'Course not found' };
-  }
-  if (course.enrolled >= course.totalSeats) {
-    return { success: false, message: 'No seats available' };
-  }
-  // In a real API you would also check if the student is already enrolled.
-  course.enrolled += 1;
-  return { success: true, message: 'Enrolled successfully', updatedCourse: course };
-};
-
-// Drop a course
-export const dropCourse = async (courseId: string): Promise<{ success: boolean; message: string; updatedCourse?: Course }> => {
-  await delay(500);
-  const course = mockCourses.find(c => c.id === courseId);
-  if (!course) {
-    return { success: false, message: 'Course not found' };
-  }
-  if (course.enrolled <= 0) {
-    return { success: false, message: 'No enrolled students to drop' };
-  }
-  course.enrolled -= 1;
-  return { success: true, message: 'Dropped successfully', updatedCourse: course };
 };
 
 // For the sidebar: get currently enrolled courses for a specific student.

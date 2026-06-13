@@ -9,6 +9,7 @@ interface CourseProps {
   format: string;
   instructor: string;
   description: string;
+  isFavorite: boolean;
   onToggleFavorite: (id: string) => void;
 }
 
@@ -19,75 +20,85 @@ export const CourseCard = ({
                              format,
                              instructor,
                              description,
+                             isFavorite,
                              onToggleFavorite,
                            }: CourseProps) => {
   const { t } = useTranslation();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(false);
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm py-3 px-4 relative border border-gray-100 dark:border-gray-700">
-      {/* Star Button */}
-      <button
-        onClick={() => onToggleFavorite(id)}
-        className="absolute top-4 right-4 text-green-iu hover:fill-green-iu"
-        aria-label={t('course.toggle_favorite')}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm py-3 px-4 border border-gray-100 dark:border-gray-700 relative">
+      {/* Compact header: title + star */}
+      <div className="flex items-start justify-between gap-2 mb-1">
+        <h3 className="text-lg font-bold text-green-iu truncate">{title}</h3>
+        <button
+          onClick={() => onToggleFavorite(id)}
+          className="shrink-0 text-green-iu hover:text-hover-green-iu dark:text-green-iu dark:hover:hover:text-dark-hover-green-iu"
+          aria-label={t('course.toggle_favorite')}
         >
-          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-        </svg>
-      </button>
-
-      <h3 className="text-2xl font-bold text-green-iu mb-3">{title}</h3>
-
-      <div className="flex flex-wrap gap-6 text-base font-medium mb-3">
-        <div className="flex gap-2">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            {t('course.language')}:
-          </span>
-          <span className="font-bold text-green-iu">{language}</span>
-        </div>
-        <div className="flex gap-2">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            {t('course.format')}:
-          </span>
-          <span className="font-bold text-green-iu">{format}</span>
-        </div>
-        <div className="flex gap-2">
-          <span className="font-bold text-gray-700 dark:text-gray-300">
-            {t('course.instructor')}:
-          </span>
-          <span className="font-bold text-gray-900 dark:text-gray-100">
-            {instructor}
-          </span>
-        </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill={isFavorite ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </button>
       </div>
 
-      <div className="pr-28">
+      {/* Metadata – single line, tiny & muted */}
+      <div className="flex flex-wrap gap-6 text-base font-medium mb-3">
+        {[
+          { label: 'course.language', value: language, valueClass: 'text-green-iu' },
+          { label: 'course.format', value: format, valueClass: 'text-green-iu' },
+          { label: 'course.instructor', value: instructor, valueClass: 'text-gray-900 dark:text-gray-100' }
+        ].map(({ label, value, valueClass }) => (
+          <div key={label} className="flex gap-2">
+            <span className="font-bold text-gray-700 dark:text-gray-300">{t(label)}:</span>
+            <span className={`font-bold ${valueClass}`}>{value}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Description area with absolute “more” button */}
+      <div className="relative">
+        {/* The description container */}
         <div
-          className={`font-medium text-gray-500 dark:text-gray-300 text-base transition-all duration-200 ${
-            isExpanded ? '' : 'overflow-hidden'
+          className={`text-base font-medium text-gray-600 dark:text-gray-300 ${
+            expanded ? '' : 'overflow-hidden'
           }`}
-          style={isExpanded ? undefined : { maxHeight: '3rem', overflow: 'hidden' }}
+          style={expanded ? undefined : { maxHeight: '3rem', overflow: 'hidden' }}
         >
           <MarkdownRenderer content={description} />
         </div>
-        <button
-          onClick={() => setIsExpanded(!isExpanded)}
-          className="absolute bottom-4 right-4 font-bold bg-green-iu hover:bg-green-iu text-white py-1 px-2 rounded text-base transition-colors shrink-0 whitespace-nowrap"
-        >
-          {isExpanded ? t('course.see_less') : t('course.see_more')}
-        </button>
+
+        {/* “See more” button overlays the end of the second line */}
+        {!expanded && (
+          <button
+            onClick={() => setExpanded(true)}
+            className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 pl-2 pb-0.5 font-medium text-green-iu hover:text-hover-green-iu dark:text-green-iu dark:hover:hover:text-dark-hover-green-iu leading-tight"
+            aria-expanded={false}
+          >
+            …{t('course.see_more')}
+          </button>
+        )}
       </div>
+
+      {/* “See less” when expanded */}
+      {expanded && (
+        <button
+          onClick={() => setExpanded(false)}
+          className="font-medium  text-green-iu hover:text-hover-green-iu dark:text-green-iu dark:hover:hover:text-dark-hover-green-iu"
+        >
+          {t('course.see_less')}
+        </button>
+      )}
     </div>
   );
 };
