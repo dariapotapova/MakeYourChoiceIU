@@ -5,7 +5,7 @@ export interface Course {
   format: 'offline' | 'online';
   instructor: string;
   description: string;
-  isFavorite: boolean;
+  type: 'tech' | 'hum' | 'math';
 }
 
 export interface UserProfile {

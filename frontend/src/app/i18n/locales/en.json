@@ -42,5 +42,21 @@
     "instructor": "Instructor",
     "see_more": "See more",
     "see_less": "Hide"
+  },
+  "course_page": {
+    "search_by_title": "Search by title...",
+    "language": "Language",
+    "format": "Format",
+    "type": "Type",
+    "clear_filters": "Clear filters",
+    "no_courses_found": "No courses found",
+    "all": "All",
+    "en": "English",
+    "ru": "Russian",
+    "online": "Online",
+    "offline": "Offline",
+    "tech": "Technical",
+    "hum": "Humanitarian",
+    "math": "Mathematical"
   }
 }

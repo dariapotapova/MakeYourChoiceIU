@@ -5,6 +5,7 @@ export interface Course {
   format: 'offline' | 'online';
   instructor: string;
   description: string;
+  type: 'tech' | 'hum' | 'math';
 }
 
 // Mock courses data
@@ -24,6 +25,7 @@ export const mockCourses: Course[] = [
       'Bluetooth\n' +
       'Wi-Fi\n' +
       'Embedded Systems\n',
+    type: 'tech',
   },
   {
     id: '2',
@@ -32,6 +34,7 @@ export const mockCourses: Course[] = [
     format: 'offline',
     instructor: 'Nikolay Kudasov',
     description: 'The main purpose of this course is to present purely functional programming with a strong static type system and discuss its benefits for structuring...',
+    type: 'tech',
   },
   {
     id: '3',
@@ -40,6 +43,7 @@ export const mockCourses: Course[] = [
     format: 'offline',
     instructor: 'Munir Makhmutov',
     description: 'The target audience of this course are students interested in music generation...',
+    type: 'tech',
   },
   {
     id: '4',
@@ -74,6 +78,7 @@ export const mockCourses: Course[] = [
       '\n' +
       '\n' +
       'Course duration: 8 lectures and 8 practices.\n',
+    type: 'tech',
   },
   {
     id: '5',
@@ -326,6 +331,7 @@ export const mockCourses: Course[] = [
       '::: warning\n' +
       '*here be dragons*\n' +
       ':::\n',
+    type: 'math',
   },
 ];
 
